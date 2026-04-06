@@ -23,14 +23,14 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (loginId, password) => {
     // Gọi API login ở đây
-    console.log('Login logic here');
+    console.log('Login logic here with:', loginId, password);
     // Mocking success
     setCurrentUser({ name: 'User Demo', email: loginId, token: 'fake-token' });
     setIsAuthModalOpen(false);
   };
 
   const register = async (name, email, phone, password) => {
-    console.log('Register logic here');
+    console.log('Register logic here with pwd length:', password.length);
     // Mocking success
     setCurrentUser({ name, email, phone, token: 'fake-token' });
     setIsAuthModalOpen(false);

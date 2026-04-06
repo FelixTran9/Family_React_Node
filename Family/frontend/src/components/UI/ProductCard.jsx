@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import { ShoppingCart, Check } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
@@ -22,7 +23,7 @@ const ProductCard = ({ product }) => {
 
   return (
     <div className="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
-      <div className="relative">
+      <Link to={`/product/${product.product_code}`} className="relative block">
         <img 
           src={imageUrl} 
           alt={product.name} 
@@ -33,12 +34,14 @@ const ProductCard = ({ product }) => {
             FamilyMart
           </span>
         </div>
-      </div>
+      </Link>
       <div className="p-4 flex flex-col justify-between h-40">
         <div>
-          <h3 className="font-bold text-gray-800 mb-1 line-clamp-2" title={product.name}>
-            {product.name}
-          </h3>
+          <Link to={`/product/${product.product_code}`}>
+            <h3 className="font-bold text-gray-800 mb-1 line-clamp-2 hover:text-cyan-600 transition" title={product.name}>
+              {product.name}
+            </h3>
+          </Link>
           <div className="text-cyan-600 font-extrabold text-xl mb-3">
             {formattedPrice} đ
           </div>

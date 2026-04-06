@@ -6,6 +6,7 @@ import MainLayout from './components/Layout/MainLayout';
 // Pages
 import Home from './pages/Home';
 import SpecialOffers from './pages/SpecialOffers';
+import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Account from './pages/Account';
 import Orders from './pages/Orders';
@@ -22,6 +23,7 @@ function App() {
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Home />} />
           <Route path="special-offers" element={<SpecialOffers />} />
+          <Route path="product/:id" element={<ProductDetail />} />
           <Route path="cart" element={<Cart />} />
           <Route path="account" element={<Account />} />
           <Route path="orders" element={<Orders />} />
@@ -32,6 +34,7 @@ function App() {
           <Route path="recruitment" element={<Recruitment />} />
         </Route>
       </Routes>
+
     </Router>
   );
 }

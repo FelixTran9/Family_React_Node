@@ -12,8 +12,9 @@ const SpecialOffers = () => {
 
   useEffect(() => {
     // Mock call API
-    setLoading(true);
+    let isMounted = true;
     setTimeout(() => {
+      if (!isMounted) return;
       const mockDb = [
         { product_code: '1', name: 'Miếng gà chiên tiêu Pe-Bo-Chi', category: 'Đồ chiên', price: 28000, image: '' },
         { product_code: '2', name: 'Xúc xích heo xông khói lớn', category: 'Lẩu', price: 21000, image: '' },
