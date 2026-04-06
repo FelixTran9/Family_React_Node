@@ -1,0 +1,66 @@
+import { createContext, useContext, useState, useEffect } from 'react';
+
+const AuthContext = createContext();
+
+export const useAuth = () => useContext(AuthContext);
+
+export const AuthProvider = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState(() => {
+    const saved = localStorage.getItem('familyMartCurrentUser');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authView, setAuthView] = useState('login'); // 'login' | 'register'
+
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('familyMartCurrentUser', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('familyMartCurrentUser');
+    }
+  }, [currentUser]);
+
+  const login = async (loginId, password) => {
+    // Gọi API login ở đây
+    console.log('Login logic here');
+    // Mocking success
+    setCurrentUser({ name: 'User Demo', email: loginId, token: 'fake-token' });
+    setIsAuthModalOpen(false);
+  };
+
+  const register = async (name, email, phone, password) => {
+    console.log('Register logic here');
+    // Mocking success
+    setCurrentUser({ name, email, phone, token: 'fake-token' });
+    setIsAuthModalOpen(false);
+  };
+
+  const logout = () => {
+    setCurrentUser(null);
+  };
+
+  const openAuthModal = (view = 'login') => {
+    setAuthView(view);
+    setIsAuthModalOpen(true);
+  };
+
+  const closeAuthModal = () => setIsAuthModalOpen(false);
+
+  return (
+    <AuthContext.Provider value={{
+      currentUser, 
+      setCurrentUser, 
+      login, 
+      register, 
+      logout,
+      isAuthModalOpen,
+      authView,
+      openAuthModal,
+      closeAuthModal,
+      setAuthView
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
