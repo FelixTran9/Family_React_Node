@@ -1,0 +1,14 @@
+
+# Thư viện
+node_modules/
+
+# File môi trường (Chứa mật khẩu, API key - CỰC KỲ QUAN TRỌNG)
+.env
+.env.local
+
+# File build (khi bạn chạy npm run build)
+dist/
+build/
+
+# Các file rác của hệ điều hành hoặc IDE
+*.zip
