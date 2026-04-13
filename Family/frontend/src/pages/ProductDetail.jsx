@@ -2,6 +2,9 @@ import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { ShoppingCart, Check, ArrowLeft, Star, Heart } from 'lucide-react';
+import API from '../services/api';
+
+const BACKEND = 'http://localhost:5002';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -12,43 +15,41 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
-    // Mock fetch product
-    let isMounted = true;
-    setTimeout(() => {
-      if (!isMounted) return;
-      // Dummy data based on the ID to simulate an API request
-      const mockProduct = {
-        product_code: id,
-        name: id === '1' ? 'Miếng gà chiên tiêu Pe-Bo-Chi' : `Sản phẩm mẫu ${id}`,
-        price: id === '1' ? 28000 : 25000,
-        category: 'Đồ chiên',
-        description: 'Món gà chiên tuyệt hảo với lớp vỏ ngoài giòn rụm, thịt bên trong mềm ngọt tự nhiên, kết hợp cùng vị thơm nồng đặc trưng của tiêu đen. Sản phẩm rất phù hợp cho những bữa ăn nhẹ hoặc ăn kèm cùng bạn bè.',
-        ingredients: 'Thịt gà tươi, bột chiên giòn, tiêu đen, gia vị độc quyền FamilyMart.',
-        image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=800&h=600&fit=crop',
-        rating: 4.8,
-        reviews: 124
-      };
-      setProduct(mockProduct);
-      setLoading(false);
-    }, 500);
+    API.get(`/products/${id}`)
+      .then(res => {
+        const d = res.data;
+        const mappedProduct = {
+          product_code: d.MaSP,
+          name: d.TenSP,
+          price: d.GiaBan,
+          category: d.TenDanhMuc || 'Chưa phân loại',
+          description: `Sản phẩm ${d.TenSP} chất lượng cao, mang lại trải nghiệm tuyệt vời cho bạn.`,
+          ingredients: d.QuyCach ? `Quy cách: ${d.QuyCach}` : 'Đang cập nhật',
+          image: d.HinhAnh 
+            ? (d.HinhAnh.startsWith('http') ? d.HinhAnh : `${BACKEND}/uploads/${d.HinhAnh}`)
+            : 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=800&h=600&fit=crop',
+          rating: 4.8,
+          reviews: 124,
+          TonKho: d.TonKho
+        };
+        setProduct(mappedProduct);
+      })
+      .catch(err => {
+        console.error('Lỗi lấy chi tiết sản phẩm:', err);
+      })
+      .finally(() => setLoading(false));
   }, [id]);
 
   const handleAddToCart = () => {
     if (product) {
-      // If quantity is more than 1, add it sequentially or adapt logic (CartContext uses 1 usually per click)
-      // We will loop or adapt CartContext. Since CartContext addToCart currently adds 1, 
-      // let's just cheat and add it multiple times, or we can update CartContext. 
-      // For now, let's dispatch it 1 time with total requested quantity structure.
-      // Assuming CartContext addToCart accepts the object, updateQuantity can be used.
-      // But let's keep it simple: Add to cart once, and if they chose qty > 1 we can just loop.
-      for (let i = 0; i < quantity; i++) {
-        addToCart(product);
+      if (product.TonKho < quantity) {
+        alert(`Sản phẩm chỉ còn ${product.TonKho} trong kho.`);
+        return;
       }
+      addToCart(product, quantity);
       
       setAdded(true);
-      setTimeout(() => {
-        setAdded(false);
-      }, 1500);
+      setTimeout(() => setAdded(false), 1500);
     }
   };
 
@@ -76,7 +77,7 @@ const ProductDetail = () => {
       <div className="container mx-auto px-4 py-8">
         
         <Link to="/special-offers" className="inline-flex items-center text-gray-500 hover:text-cyan-600 mb-8 transition font-medium">
-          <ArrowLeft className="w-5 h-5 mr-2" /> Quay lại danh sách
+          <ArrowLeft className="w-5 h-5 mr-2" /> Quay lại danh mục
         </Link>
         
         <div className="grid md:grid-cols-2 gap-12 bg-white">
@@ -110,7 +111,7 @@ const ProductDetail = () => {
               </div>
               <span className="text-gray-500 font-medium">({product.reviews} đánh giá)</span>
               <span className="text-gray-300">|</span>
-              <span className="text-gray-500 font-medium tracking-wide">Đã bán 1.2k+</span>
+              <span className="text-gray-500 font-medium tracking-wide">Kho: {product.TonKho}</span>
             </div>
 
             <div className="text-5xl font-black text-cyan-600 mb-8">
@@ -122,7 +123,7 @@ const ProductDetail = () => {
             </p>
 
             <div className="border-t border-b border-gray-100 py-6 mb-8">
-              <h3 className="font-bold text-gray-800 mb-2">Thành phần:</h3>
+              <h3 className="font-bold text-gray-800 mb-2">Thông tin thêm:</h3>
               <p className="text-gray-600 items-baseline">{product.ingredients}</p>
             </div>
 
@@ -134,17 +135,19 @@ const ProductDetail = () => {
                 >-</button>
                 <span className="px-6 py-3 font-bold text-lg select-none">{quantity}</span>
                 <button 
-                  onClick={() => setQuantity(quantity + 1)}
+                  onClick={() => setQuantity(Math.min(product.TonKho, quantity + 1))}
                   className="px-5 py-3 text-xl text-gray-600 hover:bg-gray-100 rounded-r-xl transition"
                 >+</button>
               </div>
 
               <button 
                 onClick={handleAddToCart}
-                disabled={added}
+                disabled={added || product.TonKho === 0}
                 className={`flex-1 py-4 px-8 rounded-xl font-bold flex items-center justify-center text-lg transition-all shadow-lg ${
                   added 
                     ? 'bg-green-500 hover:bg-green-600 text-white shadow-green-500/30' 
+                    : product.TonKho === 0
+                    ? 'bg-gray-400 cursor-not-allowed text-white'
                     : 'bg-cyan-600 hover:bg-cyan-700 text-white shadow-cyan-600/30'
                 }`}
               >
@@ -153,6 +156,8 @@ const ProductDetail = () => {
                     <Check className="w-6 h-6 mr-3" />
                     Đã thêm vào giỏ
                   </>
+                ) : product.TonKho === 0 ? (
+                  <>Hết hàng</>
                 ) : (
                   <>
                     <ShoppingCart className="w-6 h-6 mr-3" />

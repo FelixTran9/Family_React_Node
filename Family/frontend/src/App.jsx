@@ -1,9 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-// Layout
+// Customer Layout & Pages
 import MainLayout from './components/Layout/MainLayout';
-
-// Pages
 import Home from './pages/Home';
 import SpecialOffers from './pages/SpecialOffers';
 import ProductDetail from './pages/ProductDetail';
@@ -16,26 +14,106 @@ import About from './pages/About';
 import Policy from './pages/Policy';
 import Recruitment from './pages/Recruitment';
 
+// Admin Auth
+import { AdminAuthProvider } from './context/AdminAuthContext';
+import PrivateRoute from './components/admin/PrivateRoute';
+import AdminLayout from './components/admin/AdminLayout';
+import AdminLogin from './pages/admin/Login';
+
+// Admin Pages
+import AdminDashboard from './pages/admin/Dashboard';
+import StaffList from './pages/admin/staff/StaffList';
+import StaffCreate from './pages/admin/staff/StaffCreate';
+import StaffEdit from './pages/admin/staff/StaffEdit';
+import ProductList from './pages/admin/products/ProductList';
+import ProductCreate from './pages/admin/products/ProductCreate';
+import ProductEdit from './pages/admin/products/ProductEdit';
+import OrderList from './pages/admin/orders/OrderList';
+import OrderCreate from './pages/admin/orders/OrderCreate';
+import OrderDetail from './pages/admin/orders/OrderDetail';
+import ShippingList from './pages/admin/shipping/ShippingList';
+import ShippingCreate from './pages/admin/shipping/ShippingCreate';
+import ShippingEdit from './pages/admin/shipping/ShippingEdit';
+import PromotionList from './pages/admin/promotions/PromotionList';
+import PromotionCreate from './pages/admin/promotions/PromotionCreate';
+import PromotionEdit from './pages/admin/promotions/PromotionEdit';
+import CustomerList from './pages/admin/customers/CustomerList';
+import CustomerCreate from './pages/admin/customers/CustomerCreate';
+import CustomerEdit from './pages/admin/customers/CustomerEdit';
+import SupplierList from './pages/admin/suppliers/SupplierList';
+import SupplierCreate from './pages/admin/suppliers/SupplierCreate';
+import SupplierEdit from './pages/admin/suppliers/SupplierEdit';
+
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<MainLayout />}>
-          <Route index element={<Home />} />
-          <Route path="special-offers" element={<SpecialOffers />} />
-          <Route path="product/:id" element={<ProductDetail />} />
-          <Route path="cart" element={<Cart />} />
-          <Route path="account" element={<Account />} />
-          <Route path="orders" element={<Orders />} />
-          <Route path="stores" element={<Stores />} />
-          <Route path="news" element={<News />} />
-          <Route path="about" element={<About />} />
-          <Route path="policy" element={<Policy />} />
-          <Route path="recruitment" element={<Recruitment />} />
-        </Route>
-      </Routes>
+    <AdminAuthProvider>
+      <Router>
+        <Routes>
+          {/* ===== Customer Routes ===== */}
+          <Route path="/" element={<MainLayout />}>
+            <Route index element={<Home />} />
+            <Route path="special-offers" element={<SpecialOffers />} />
+            <Route path="product/:id" element={<ProductDetail />} />
+            <Route path="cart" element={<Cart />} />
+            <Route path="account" element={<Account />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="stores" element={<Stores />} />
+            <Route path="news" element={<News />} />
+            <Route path="about" element={<About />} />
+            <Route path="policy" element={<Policy />} />
+            <Route path="recruitment" element={<Recruitment />} />
+          </Route>
 
-    </Router>
+          {/* ===== Admin Login (public) ===== */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+
+          {/* ===== Admin Protected Routes ===== */}
+          <Route
+            path="/admin"
+            element={<PrivateRoute><AdminLayout /></PrivateRoute>}
+          >
+            <Route index element={<AdminDashboard />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+
+            {/* Staff */}
+            <Route path="staff" element={<StaffList />} />
+            <Route path="staff/create" element={<StaffCreate />} />
+            <Route path="staff/:id/edit" element={<StaffEdit />} />
+
+            {/* Products */}
+            <Route path="products" element={<ProductList />} />
+            <Route path="products/create" element={<ProductCreate />} />
+            <Route path="products/:id/edit" element={<ProductEdit />} />
+
+            {/* Orders */}
+            <Route path="orders" element={<OrderList />} />
+            <Route path="orders/create" element={<OrderCreate />} />
+            <Route path="orders/:id" element={<OrderDetail />} />
+            <Route path="orders/:id/edit" element={<OrderDetail />} />
+
+            {/* Shipping */}
+            <Route path="shipping" element={<ShippingList />} />
+            <Route path="shipping/create" element={<ShippingCreate />} />
+            <Route path="shipping/:id/edit" element={<ShippingEdit />} />
+
+            {/* Promotions */}
+            <Route path="promotions" element={<PromotionList />} />
+            <Route path="promotions/create" element={<PromotionCreate />} />
+            <Route path="promotions/:id/edit" element={<PromotionEdit />} />
+
+            {/* Customers */}
+            <Route path="customers" element={<CustomerList />} />
+            <Route path="customers/create" element={<CustomerCreate />} />
+            <Route path="customers/:id/edit" element={<CustomerEdit />} />
+
+            {/* Suppliers */}
+            <Route path="suppliers" element={<SupplierList />} />
+            <Route path="suppliers/create" element={<SupplierCreate />} />
+            <Route path="suppliers/:id/edit" element={<SupplierEdit />} />
+          </Route>
+        </Routes>
+      </Router>
+    </AdminAuthProvider>
   );
 }
 

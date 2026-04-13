@@ -1,49 +1,96 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import ProductCard from '../components/UI/ProductCard';
+import API from '../services/api';
+
+const BACKEND = 'http://localhost:5002';
 
 const SpecialOffers = () => {
   const [searchParams] = useSearchParams();
   const search = searchParams.get('search');
   const category = searchParams.get('category');
   
-  const [products, setProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState(category || 'all');
 
   useEffect(() => {
-    // Mock call API
-    let isMounted = true;
-    setTimeout(() => {
-      if (!isMounted) return;
-      const mockDb = [
-        { product_code: '1', name: 'Miếng gà chiên tiêu Pe-Bo-Chi', category: 'Đồ chiên', price: 28000, image: '' },
-        { product_code: '2', name: 'Xúc xích heo xông khói lớn', category: 'Lẩu', price: 21000, image: '' },
-        { product_code: '3', name: 'Trà Sữa Thái', category: 'Thức uống Fami', price: 20000, image: '' },
-        { product_code: '5', name: 'Bánh Mì Kẹp Thịt', category: 'Bánh mì', price: 15000, image: '' },
-      ];
+    Promise.all([
+      API.get('/products'),
+      API.get('/categories'),
+    ]).then(([prodRes, catRes]) => {
+      const mapped = prodRes.data.map(sp => ({
+        product_code: sp.MaSP,
+        name: sp.TenSP,
+        price: sp.GiaBan,
+        image: sp.HinhAnh
+          ? (sp.HinhAnh.startsWith('http') ? sp.HinhAnh : `${BACKEND}/uploads/${sp.HinhAnh}`)
+          : '',
+        category: sp.TenDanhMuc || '',
+        MaDanhMuc: sp.MaDanhMuc,
+        TonKho: sp.TonKho,
+      }));
+      setAllProducts(mapped);
+      setCategories(catRes.data);
+    }).catch(err => {
+      console.error('Lỗi tải sản phẩm:', err);
+    }).finally(() => setLoading(false));
+  }, []);
 
-      let filtered = mockDb;
-      if (search) {
-        filtered = mockDb.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
-      } else if (category && category !== 'all') {
-        filtered = mockDb.filter(p => p.category === category);
-      }
-      
-      setProducts(filtered);
-      setLoading(false);
-    }, 500);
-  }, [search, category]);
+  // Đồng bộ activeCategory khi URL thay đổi
+  useEffect(() => {
+    setActiveCategory(category || 'all');
+  }, [category]);
 
-  const title = search ? `Kết quả tìm kiếm cho: "${search}"` : (category && category !== 'all' ? `Danh mục: ${category}` : 'Tất cả sản phẩm & Ưu đãi');
+  // Lọc sản phẩm
+  const products = allProducts.filter(p => {
+    if (search) return p.name.toLowerCase().includes(search.toLowerCase());
+    if (activeCategory && activeCategory !== 'all') return p.category === activeCategory;
+    return true;
+  });
+
+  const title = search
+    ? `Kết quả tìm kiếm: "${search}" (${products.length})`
+    : (activeCategory && activeCategory !== 'all' ? `Danh mục: ${activeCategory}` : `Tất cả sản phẩm (${products.length})`);
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="bg-white p-6 rounded-2xl shadow-sm mb-8 border border-gray-100">
+      <div className="bg-white p-6 rounded-2xl shadow-sm mb-6 border border-gray-100">
         <h1 className="text-3xl font-extrabold text-gray-800 flex items-center">
           <span className="w-1.5 h-8 bg-cyan-600 rounded-full mr-4 block"></span>
           {title}
         </h1>
       </div>
+
+      {/* Filter danh mục */}
+      {!search && categories.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          <button
+            onClick={() => setActiveCategory('all')}
+            className={`px-4 py-2 rounded-full font-semibold text-sm transition ${
+              activeCategory === 'all'
+                ? 'bg-cyan-600 text-white shadow'
+                : 'bg-white text-gray-600 border border-gray-200 hover:bg-cyan-50'
+            }`}
+          >
+            Tất cả
+          </button>
+          {categories.map(cat => (
+            <button
+              key={cat.MaDanhMuc}
+              onClick={() => setActiveCategory(cat.TenDanhMuc)}
+              className={`px-4 py-2 rounded-full font-semibold text-sm transition ${
+                activeCategory === cat.TenDanhMuc
+                  ? 'bg-cyan-600 text-white shadow'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-cyan-50'
+              }`}
+            >
+              {cat.TenDanhMuc}
+            </button>
+          ))}
+        </div>
+      )}
 
       {loading ? (
         <div className="flex justify-center py-20">
@@ -59,7 +106,13 @@ const SpecialOffers = () => {
         <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
           <img src="https://cdn-icons-png.flaticon.com/512/107/107135.png" alt="Not found" className="w-24 h-24 mx-auto mb-4 opacity-50" />
           <h2 className="text-2xl font-bold text-gray-600 mb-2">Không tìm thấy sản phẩm!</h2>
-          <p className="text-gray-500">Vui lòng thử nghiệm với các từ khóa tìm kiếm hoặc danh mục khác.</p>
+          <p className="text-gray-500 mb-4">Vui lòng thử từ khóa khác hoặc chọn danh mục khác.</p>
+          <button
+            onClick={() => setActiveCategory('all')}
+            className="inline-block bg-cyan-600 text-white px-6 py-2 rounded-full font-bold hover:bg-cyan-700 transition"
+          >
+            Xem tất cả
+          </button>
         </div>
       )}
     </div>

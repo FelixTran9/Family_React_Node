@@ -14,17 +14,17 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('familyMartCart', JSON.stringify(cart));
   }, [cart]);
 
-  const addToCart = (product) => {
+  const addToCart = (product, qty = 1) => {
     setCart(prev => {
       const existingItem = prev.find(item => item.product_code === product.product_code);
       if (existingItem) {
         return prev.map(item => 
           item.product_code === product.product_code 
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + qty }
             : item
         );
       }
-      return [...prev, { ...product, quantity: 1, id: product.product_code }];
+      return [...prev, { ...product, quantity: qty, id: product.product_code }];
     });
   };
 
@@ -44,11 +44,13 @@ export const CartProvider = ({ children }) => {
     ));
   };
 
+  const clearCart = () => setCart([]);
+
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, cartCount, cartTotal }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, cartTotal }}>
       {children}
     </CartContext.Provider>
   );

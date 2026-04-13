@@ -2,32 +2,41 @@ import { Link } from 'react-router-dom';
 import CategoryCard from '../components/UI/CategoryCard';
 import ProductCard from '../components/UI/ProductCard';
 import { useEffect, useState } from 'react';
+import API from '../services/api';
+
+const BACKEND = 'http://localhost:5002';
 
 const Home = () => {
-  const [bestSellers, setBestSellers] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock dữ liệu tạm thời để giao diện hoạt động thay thế cho API
-    const mockProducts = [
-      { product_code: '1', name: 'Miếng gà chiên tiêu Pe-Bo-Chi', price: 28000, image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400&h=300&fit=crop' },
-      { product_code: '2', name: 'Xúc xích heo xông khói lớn', price: 21000, image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400&h=300&fit=crop' },
-      { product_code: '3', name: 'Xúc xích hộp lô bò phô mai', price: 16000, image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=300&fit=crop' },
-      { product_code: '4', name: 'Set Yêu Thích 1', price: 28000, image: 'https://images.unsplash.com/photo-1562967914-608f82629710?w=400&h=300&fit=crop' },
-      { product_code: '5', name: 'Bánh Mì Kẹp Thịt', price: 15000, image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=300&fit=crop' },
-    ];
-    setBestSellers(mockProducts);
+    // Lấy sản phẩm và danh mục từ DB
+    Promise.all([
+      API.get('/products'),
+      API.get('/categories'),
+    ]).then(([prodRes, catRes]) => {
+      // Map cột DB sang format ProductCard cần
+      const mapped = prodRes.data.map(sp => ({
+        product_code: sp.MaSP,
+        name: sp.TenSP,
+        price: sp.GiaBan,
+        image: sp.HinhAnh
+          ? (sp.HinhAnh.startsWith('http') ? sp.HinhAnh : `${BACKEND}/uploads/${sp.HinhAnh}`)
+          : '',
+        category: sp.TenDanhMuc || '',
+        MaDanhMuc: sp.MaDanhMuc,
+      }));
+      setProducts(mapped);
+      setCategories(catRes.data);
+    }).catch(err => {
+      console.error('Lỗi tải dữ liệu:', err);
+    }).finally(() => setLoading(false));
   }, []);
 
-  const categories = [
-    { name: 'Sandwich', image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200&h=200&fit=crop' },
-    { name: 'Thức ăn phụ', image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200&h=200&fit=crop' },
-    { name: 'Salad', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop' },
-    { name: 'Tráng miệng', image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=200&h=200&fit=crop' },
-    { name: 'Bánh mì', image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=200&h=200&fit=crop' },
-    { name: 'Bánh ngọt', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=200&h=200&fit=crop' },
-    { name: 'Thực phẩm', image: 'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=200&h=200&fit=crop' },
-    { name: 'Dịch vụ', image: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=200&h=200&fit=crop' }
-  ];
+  // Lấy 5 sản phẩm đầu làm "bán chạy"
+  const bestSellers = products.slice(0, 5);
 
   return (
     <>
@@ -52,17 +61,37 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Danh mục sản phẩm từ DB */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-extrabold text-gray-800 mb-8 flex items-center">
             <span className="w-1.5 h-8 bg-cyan-600 rounded-full mr-4 block"></span>
-            Sản phẩm đặc trưng của FamilyMart
+            Danh mục sản phẩm
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-            {categories.map((cat, idx) => (
-              <CategoryCard key={idx} category={cat} />
-            ))}
-          </div>
+          {categories.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+              {categories.map((cat) => (
+                <Link
+                  key={cat.MaDanhMuc}
+                  to={`/special-offers?category=${encodeURIComponent(cat.TenDanhMuc)}`}
+                  className="flex flex-col items-center p-4 bg-gray-50 rounded-2xl hover:bg-cyan-50 hover:shadow-md transition group"
+                >
+                  <div className="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center mb-2 group-hover:bg-cyan-600 transition">
+                    <span className="text-2xl">🛍️</span>
+                  </div>
+                  <span className="text-xs font-semibold text-gray-700 text-center group-hover:text-cyan-700 transition line-clamp-2">
+                    {cat.TenDanhMuc}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+              {['Sandwich', 'Thức ăn phụ', 'Salad', 'Tráng miệng', 'Bánh mì', 'Bánh ngọt', 'Thực phẩm', 'Dịch vụ'].map((name, idx) => (
+                <CategoryCard key={idx} category={{ name, image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200&h=200&fit=crop' }} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -75,23 +104,35 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Sản phẩm bán chạy từ DB */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-extrabold text-gray-800 mb-8 flex items-center">
             <span className="w-1.5 h-8 bg-cyan-600 rounded-full mr-4 block"></span>
-            Sản phẩm bán chạy
+            Sản phẩm nổi bật
           </h2>
           
-          {bestSellers.length > 0 ? (
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600"></div>
+            </div>
+          ) : bestSellers.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
               {bestSellers.map(p => (
                 <ProductCard key={p.product_code} product={p} />
               ))}
             </div>
           ) : (
-            <p className="text-center text-gray-500 py-8 text-lg">Đang tải giỏ hàng...</p>
+            <p className="text-center text-gray-500 py-8 text-lg">Chưa có sản phẩm nào trong hệ thống.</p>
           )}
 
+          {products.length > 5 && (
+            <div className="text-center mt-8">
+              <Link to="/special-offers" className="inline-block bg-cyan-600 text-white px-8 py-3 rounded-full font-bold hover:bg-cyan-700 transition">
+                Xem tất cả sản phẩm ({products.length})
+              </Link>
+            </div>
+          )}
         </div>
       </section>
     </>
