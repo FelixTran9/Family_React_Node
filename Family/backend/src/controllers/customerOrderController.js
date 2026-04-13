@@ -5,6 +5,119 @@ const genMaKH = () => "KH" + crypto.randomBytes(4).toString("hex").toUpperCase()
 const genMaDon = () => "ĐH" + crypto.randomBytes(4).toString("hex").toUpperCase();
 
 /**
+ * GET /api/customers/lookup/:sdt — Tra cứu khách hàng theo SĐT để Auto-fill
+ */
+export const getCustomerByPhone = async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT TenKH, SDT, DiaChi, Email FROM KHACH_HANG WHERE SDT = ?",
+      [req.params.sdt]
+    );
+    if (rows.length > 0) {
+      res.json(rows[0]);
+    } else {
+      res.status(404).json({ message: "Không tìm thấy khách hàng" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi tra cứu khách hàng", error: err.message });
+  }
+};
+
+/**
+ * POST /api/customers/login — Đăng nhập khách hàng
+ * Dùng tạm Email làm ID
+ */
+export const customerLogin = async (req, res) => {
+  const { loginId } = req.body;
+  if (!loginId) return res.status(400).json({ message: "Vui lòng nhập email hoặc sđt" });
+  
+  try {
+    const [rows] = await pool.query(
+      "SELECT TenKH, SDT, DiaChi, Email FROM KHACH_HANG WHERE Email = ? OR SDT = ? ORDER BY MaKH DESC LIMIT 1",
+      [loginId, loginId]
+    );
+    
+    if (rows.length > 0) {
+      res.json(rows[0]);
+    } else {
+      res.status(404).json({ message: "Chưa có tài khoản. Hãy điền form để tạo mới." });
+    }
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi đăng nhập", error: err.message });
+  }
+};
+
+/**
+ * PUT /api/customers/:email — Cập nhật thông tin khách hàng từ trang Account
+ */
+export const updateCustomerByEmail = async (req, res) => {
+  const oldEmail = req.params.email;
+  const { TenKH, SDT, DiaChi, Email } = req.body;
+
+  if (!oldEmail || !TenKH) {
+    return res.status(400).json({ message: "Thiếu thông tin bắt buộc" });
+  }
+
+  try {
+    const [result] = await pool.query(
+      "UPDATE KHACH_HANG SET TenKH=?, SDT=?, DiaChi=?, Email=? WHERE Email=? ORDER BY MaKH DESC LIMIT 1",
+      [TenKH, SDT || null, DiaChi || null, Email || oldEmail, oldEmail]
+    );
+
+    if (result.affectedRows === 0) {
+      // Nếu khách hàng chưa tồn tại, tạo mới
+      let MaKH = genMaKH();
+      let [check] = await pool.query("SELECT MaKH FROM KHACH_HANG WHERE MaKH = ?", [MaKH]);
+      while (check.length > 0) {
+        MaKH = genMaKH();
+        [check] = await pool.query("SELECT MaKH FROM KHACH_HANG WHERE MaKH = ?", [MaKH]);
+      }
+      await pool.query(
+        "INSERT INTO KHACH_HANG (MaKH, TenKH, SDT, DiaChi, Email) VALUES (?, ?, ?, ?, ?)",
+        [MaKH, TenKH, SDT || null, DiaChi || null, Email || oldEmail]
+      );
+    }
+    res.json({ message: "Cập nhật thành công" });
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi cập nhật khách hàng", error: err.message });
+  }
+};
+
+/**
+ * GET /api/customers/:email/orders — Lấy danh sách đơn hàng của khách hàng
+ */
+export const getCustomerOrdersByEmail = async (req, res) => {
+  const { email } = req.params;
+  try {
+    // Lấy tất cả các khách hàng có chung Email hoặc SĐT (Do mock data bị duplicate hồi trước)
+    const [khList] = await pool.query("SELECT MaKH FROM KHACH_HANG WHERE Email=? OR SDT=?", [email, email]);
+    
+    if (khList.length === 0) {
+      return res.json([]); // Chưa có đơn nào
+    }
+    
+    // Lấy mảng các MaKH
+    const maKhArray = khList.map(kh => kh.MaKH);
+
+    // Lấy đơn hàng của tất cả MaKH đó
+    const query = `
+      SELECT DON_BAN_HANG.MaDon as id, 
+             DATE_FORMAT(DON_BAN_HANG.NgayDat, '%d/%m/%Y %H:%i') as date, 
+             DON_BAN_HANG.TongThanhToan as total, 
+             DON_BAN_HANG.TrangThai as status,
+             (SELECT COUNT(*) FROM CT_DON_BAN WHERE CT_DON_BAN.MaDon = DON_BAN_HANG.MaDon) as items
+      FROM DON_BAN_HANG
+      WHERE MaKH IN (?)
+      ORDER BY NgayDat DESC
+    `;
+    const [orders] = await pool.query(query, [maKhArray]);
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi lấy đơn hàng", error: err.message });
+  }
+};
+
+/**
  * GET /api/products/categories — Danh mục cho trang khách hàng
  */
 export const getCategories = async (req, res) => {

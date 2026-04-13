@@ -19,7 +19,7 @@ const TopBar = () => {
   }, []);
 
   return (
-    <div className="bg-white border-b">
+    <div className="bg-white border-b relative z-[60]">
       <div className="container mx-auto px-4 py-2 flex justify-between items-center text-sm">
         <div className="flex items-center space-x-4">
           <span className="text-gray-600">📞 Hotline: 037 703 8778</span>

@@ -61,37 +61,73 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Danh mục sản phẩm từ DB */}
-      <section className="py-16 bg-white">
+      {/* Danh mục sản phẩm từ DB - PREMIUM DESIGN */}
+      <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-extrabold text-gray-800 mb-8 flex items-center">
-            <span className="w-1.5 h-8 bg-cyan-600 rounded-full mr-4 block"></span>
-            Danh mục sản phẩm
-          </h2>
-          {categories.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-              {categories.map((cat) => (
+          <div className="flex justify-between items-end mb-10">
+            <div>
+              <h2 className="text-4xl font-black text-gray-800 flex items-center tracking-tight">
+                <span className="w-2 h-10 bg-gradient-to-t from-cyan-600 to-cyan-400 rounded-full mr-4 block"></span>
+                Khám Phá Danh Mục
+              </h2>
+              <p className="text-gray-500 mt-2 ml-6 text-lg">Đa dạng lựa chọn, đáp ứng mọi nhu cầu hàng ngày</p>
+            </div>
+            <Link to="/special-offers" className="hidden md:flex items-center text-cyan-600 font-bold hover:text-cyan-800 transition">
+              Xem tất cả <span className="ml-2 text-xl">→</span>
+            </Link>
+          </div>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+            {(categories.length > 0 ? categories : [
+              { MaDanhMuc: '1', TenDanhMuc: 'Sandwich' },
+              { MaDanhMuc: '2', TenDanhMuc: 'Thức ăn phụ' },
+              { MaDanhMuc: '3', TenDanhMuc: 'Salad' },
+              { MaDanhMuc: '4', TenDanhMuc: 'Tráng miệng' },
+              { MaDanhMuc: '5', TenDanhMuc: 'Bánh mì' },
+              { MaDanhMuc: '6', TenDanhMuc: 'Đồ uống' },
+            ]).map((cat, index) => {
+              const bgImages = [
+                "https://p16-lemon8-sign-sg.tiktokcdn.com/tos-alisg-v-a3e477-sg/oIIkvAn1IBCDAFdVb9EgQ8AeMi8PAGN9pfttQX~tplv-sdweummd6v-text-logo-v1:QGthcmxhLmZvb2RibG9n:q75.jpeg?lk3s=c7f08e79&source=lemon8_seo&x-expires=1778673600&x-signature=6xweZB0xoNlDLZO%2FobAwy6Ts%2BDQ%3D",
+                "https://marketingai.mediacdn.vn/wp-content/uploads/2020/03/kantar_worldpanel_beautyCN_4.jpg",
+                "https://images.unsplash.com/photo-1576402187878-974f70c890a5?w=800&fit=crop",
+                "https://cellphones.com.vn/sforum/wp-content/uploads/2023/07/review-do-gia-dung-thumb.jpg",
+                "https://media-cdn-v2.laodong.vn/storage/newsportal/2023/3/5/1154482/Do-Uong-Co-Duong-4.jpg",
+                "https://media-cdn-v2.laodong.vn/storage/newsportal/2023/3/5/1154482/Do-Uong-Co-Duong-4.jpg",
+                "https://media-cdn-v2.laodong.vn/storage/newsportal/2023/3/5/1154482/Do-Uong-Co-Duong-4.jpg",
+                "https://media-cdn-v2.laodong.vn/storage/newsportal/2023/3/5/1154482/Do-Uong-Co-Duong-4.jpg",
+                "https://media-cdn-v2.laodong.vn/storage/newsportal/2023/3/5/1154482/Do-Uong-Co-Duong-4.jpg",
+              ];
+              const image = bgImages[index % bgImages.length];
+
+              return (
                 <Link
                   key={cat.MaDanhMuc}
                   to={`/special-offers?category=${encodeURIComponent(cat.TenDanhMuc)}`}
-                  className="flex flex-col items-center p-4 bg-gray-50 rounded-2xl hover:bg-cyan-50 hover:shadow-md transition group"
+                  className="group relative rounded-[2rem] overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 aspect-[4/5] flex flex-col justify-end"
                 >
-                  <div className="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center mb-2 group-hover:bg-cyan-600 transition">
-                    <span className="text-2xl">🛍️</span>
+                  <img 
+                    src={image} 
+                    alt={cat.TenDanhMuc}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  
+                  <div className="relative p-6 z-10 w-full transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                    <h3 className="text-white font-extrabold text-xl leading-snug drop-shadow-md">
+                      {cat.TenDanhMuc}
+                    </h3>
+                    <div className="w-8 h-1 bg-cyan-400 mt-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-x-4 group-hover:translate-x-0"></div>
                   </div>
-                  <span className="text-xs font-semibold text-gray-700 text-center group-hover:text-cyan-700 transition line-clamp-2">
-                    {cat.TenDanhMuc}
-                  </span>
                 </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-              {['Sandwich', 'Thức ăn phụ', 'Salad', 'Tráng miệng', 'Bánh mì', 'Bánh ngọt', 'Thực phẩm', 'Dịch vụ'].map((name, idx) => (
-                <CategoryCard key={idx} category={{ name, image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200&h=200&fit=crop' }} />
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </div>
+          
+          <div className="mt-8 text-center md:hidden">
+            <Link to="/special-offers" className="inline-flex items-center justify-center w-full bg-cyan-100 text-cyan-700 py-4 rounded-xl font-bold hover:bg-cyan-200 transition">
+              Xem tất cả danh mục
+            </Link>
+          </div>
         </div>
       </section>
 

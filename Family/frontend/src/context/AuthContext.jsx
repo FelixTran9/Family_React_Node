@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import API from '../services/api';
 
 const AuthContext = createContext();
 
@@ -22,11 +23,22 @@ export const AuthProvider = ({ children }) => {
   }, [currentUser]);
 
   const login = async (loginId, password) => {
-    // Gọi API login ở đây
-    console.log('Login logic here with:', loginId, password);
-    // Mocking success
-    setCurrentUser({ name: 'User Demo', email: loginId, token: 'fake-token' });
-    setIsAuthModalOpen(false);
+    try {
+      const res = await API.post('/customers/login', { loginId });
+      const user = res.data;
+      setCurrentUser({ 
+        name: user.TenKH, 
+        email: user.Email || loginId, 
+        phone: user.SDT,
+        address: user.DiaChi,
+        token: 'fake-token' 
+      });
+      setIsAuthModalOpen(false);
+    } catch (err) {
+      // Nếu chưa có tài khoản, giả lập tạo mới với Email
+      setCurrentUser({ name: 'Khách Hàng', email: loginId, token: 'fake-token' });
+      setIsAuthModalOpen(false);
+    }
   };
 
   const register = async (name, email, phone, password) => {

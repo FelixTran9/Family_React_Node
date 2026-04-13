@@ -23,7 +23,7 @@ import supplierRoutes from "./routes/supplierRoutes.js";
 // Upload & Customer Order
 import { upload, uploadProductImage } from "./controllers/uploadController.js";
 import authAdmin from "./middleware/authAdmin.js";
-import { getCategories, customerPlaceOrder } from "./controllers/customerOrderController.js";
+import { getCategories, customerPlaceOrder, getCustomerByPhone, updateCustomerByEmail, customerLogin, getCustomerOrdersByEmail } from "./controllers/customerOrderController.js";
 
 dotenv.config();
 
@@ -47,6 +47,10 @@ app.use("/api/admin/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.get("/api/categories", getCategories);          // Danh mục sản phẩm
 app.post("/api/orders", customerPlaceOrder);          // Khách đặt hàng
+app.post("/api/customers/login", customerLogin);      // Đăng nhập khách hàng
+app.get("/api/customers/lookup/:sdt", getCustomerByPhone); // Tự động lấy thông tin khách hàng
+app.put("/api/customers/:email", updateCustomerByEmail); // Cập nhật thông tin khách hàng
+app.get("/api/customers/:email/orders", getCustomerOrdersByEmail); // Lấy lịch sử đơn hàng
 
 // --- Upload ảnh (chỉ admin) ---
 app.post(
