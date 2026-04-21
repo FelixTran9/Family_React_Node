@@ -2,15 +2,39 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAdminAuth } from "../../context/AdminAuthContext";
 import "./admin.css";
 
-const menuItems = [
-  { to: "/admin/dashboard", icon: "📊", label: "Tổng quan" },
-  { to: "/admin/products", icon: "📦", label: "Sản phẩm" },
-  { to: "/admin/orders", icon: "🛒", label: "Đơn hàng" },
-  { to: "/admin/staff", icon: "👥", label: "Nhân viên" },
-  { to: "/admin/shipping", icon: "🚚", label: "Vận chuyển" },
-  { to: "/admin/promotions", icon: "🏷️", label: "Khuyến mãi" },
-  { to: "/admin/customers", icon: "👤", label: "Khách hàng" },
-  { to: "/admin/suppliers", icon: "🏭", label: "Nhà cung cấp" },
+const menuGroups = [
+  {
+    label: "Tổng quan",
+    items: [
+      { to: "/admin/dashboard", icon: "📊", label: "Dashboard" },
+      { to: "/admin/reports",   icon: "📈", label: "Báo cáo & Thống kê" },
+    ],
+  },
+  {
+    label: "Bán hàng",
+    items: [
+      { to: "/admin/products",   icon: "📦", label: "Sản phẩm" },
+      { to: "/admin/orders",     icon: "🛒", label: "Đơn hàng" },
+      { to: "/admin/promotions", icon: "🏷️", label: "Khuyến mãi" },
+      { to: "/admin/customers",  icon: "👤", label: "Khách hàng" },
+      { to: "/admin/shipping",   icon: "🚚", label: "Vận chuyển" },
+    ],
+  },
+  {
+    label: "Kho hàng",
+    items: [
+      { to: "/admin/suppliers",  icon: "🏭", label: "Nhà cung cấp" },
+      { to: "/admin/nhap-hang",  icon: "📥", label: "Nhập hàng" },
+    ],
+  },
+  {
+    label: "Nhân sự",
+    items: [
+      { to: "/admin/staff",                 icon: "👥", label: "Nhân viên" },
+      { to: "/admin/nhan-su/cham-cong",     icon: "🕐", label: "Chấm công" },
+      { to: "/admin/nhan-su/bang-luong",    icon: "💰", label: "Bảng lương" },
+    ],
+  },
 ];
 
 const AdminSidebar = () => {
@@ -33,15 +57,29 @@ const AdminSidebar = () => {
       </div>
 
       <nav className="sidebar-nav">
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}
-          >
-            <span className="link-icon">{item.icon}</span>
-            <span className="link-label">{item.label}</span>
-          </NavLink>
+        {menuGroups.map((group) => (
+          <div key={group.label} style={{ marginBottom: "4px" }}>
+            <div style={{
+              fontSize: "0.65rem",
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.35)",
+              padding: "10px 20px 4px",
+            }}>
+              {group.label}
+            </div>
+            {group.items.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}
+              >
+                <span className="link-icon">{item.icon}</span>
+                <span className="link-label">{item.label}</span>
+              </NavLink>
+            ))}
+          </div>
         ))}
       </nav>
 

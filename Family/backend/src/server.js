@@ -19,6 +19,8 @@ import shippingRoutes from "./routes/shippingRoutes.js";
 import promotionAdminRoutes from "./routes/promotionAdminRoutes.js";
 import customerAdminRoutes from "./routes/customerAdminRoutes.js";
 import supplierRoutes from "./routes/supplierRoutes.js";
+import nhapHangRoutes from "./routes/nhapHangRoutes.js";
+import nhanSuRoutes from "./routes/nhanSuRoutes.js";
 
 // Upload & Customer Order
 import { upload, uploadProductImage } from "./controllers/uploadController.js";
@@ -69,7 +71,29 @@ app.use("/api/admin/shipping", shippingRoutes);
 app.use("/api/admin/promotions", promotionAdminRoutes);
 app.use("/api/admin/customers", customerAdminRoutes);
 app.use("/api/admin/suppliers", supplierRoutes);
+app.use("/api/admin/nhap-hang", nhapHangRoutes);
+app.use("/api/admin/nhan-su", nhanSuRoutes);
 
-app.listen(PORT, () => {
+import fs from "fs";
+import pool from "./config/db.js";
+
+app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
+  try {
+    const [rows] = await pool.query("SHOW TABLES LIKE 'PHIEU_NHAP_HANG'");
+    if (rows.length === 0) {
+      console.log("Migrating database...");
+      const sqlPath = path.join(__dirname, "../migration_nhap_hang_nhan_su.sql");
+      if (fs.existsSync(sqlPath)) {
+        const sql = fs.readFileSync(sqlPath, "utf-8");
+        const statements = sql.split(";").filter(s => s.trim() !== "");
+        for (const stmt of statements) { await pool.query(stmt); }
+        console.log("Migration successful.");
+      } else {
+        console.log("Migration file not found at " + sqlPath);
+      }
+    }
+  } catch (err) {
+    console.error("Migration failed:", err.message);
+  }
 });

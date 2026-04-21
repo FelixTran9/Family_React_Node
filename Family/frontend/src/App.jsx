@@ -43,6 +43,12 @@ import CustomerEdit from './pages/admin/customers/CustomerEdit';
 import SupplierList from './pages/admin/suppliers/SupplierList';
 import SupplierCreate from './pages/admin/suppliers/SupplierCreate';
 import SupplierEdit from './pages/admin/suppliers/SupplierEdit';
+import ReportPage from './pages/admin/ReportPage';
+import NhapHangList from './pages/admin/nhapHang/NhapHangList';
+import NhapHangCreate from './pages/admin/nhapHang/NhapHangCreate';
+import NhapHangDetail from './pages/admin/nhapHang/NhapHangDetail';
+import ChamCongList from './pages/admin/nhanSu/ChamCongList';
+import BangLuongList from './pages/admin/nhanSu/BangLuongList';
 
 function App() {
   return (
@@ -110,6 +116,18 @@ function App() {
             <Route path="suppliers" element={<SupplierList />} />
             <Route path="suppliers/create" element={<SupplierCreate />} />
             <Route path="suppliers/:id/edit" element={<SupplierEdit />} />
+
+            {/* Nhập hàng */}
+            <Route path="nhap-hang" element={<NhapHangList />} />
+            <Route path="nhap-hang/create" element={<NhapHangCreate />} />
+            <Route path="nhap-hang/:id" element={<NhapHangDetail />} />
+
+            {/* Nhân sự - Chấm công & Bảng lương */}
+            <Route path="nhan-su/cham-cong" element={<ChamCongList />} />
+            <Route path="nhan-su/bang-luong" element={<BangLuongList />} />
+
+            {/* Reports */}
+            <Route path="reports" element={<ReportPage />} />
           </Route>
         </Routes>
       </Router>
