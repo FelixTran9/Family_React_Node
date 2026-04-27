@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import adminApi from "../../../services/adminApi";
+import "../../../components/admin/admin.css";
 
 const now = new Date();
 
@@ -16,7 +17,6 @@ const BangLuongList = () => {
     maNV: "",
   });
 
-  // Modal tính lương hàng loạt
   const [showTinhLuong, setShowTinhLuong] = useState(false);
   const [tinhForm, setTinhForm] = useState({
     Thang: String(now.getMonth() + 1),
@@ -28,7 +28,6 @@ const BangLuongList = () => {
   const [tinhLoading, setTinhLoading] = useState(false);
   const [tinhMsg, setTinhMsg] = useState("");
 
-  // Modal sửa
   const [editRow, setEditRow] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [editSaving, setEditSaving] = useState(false);
@@ -38,32 +37,43 @@ const BangLuongList = () => {
   const totalPages = Math.ceil(total / limit);
 
   useEffect(() => {
-    adminApi.get("/staff?limit=200").then(r => setStaffs(r.data.data || []));
+    adminApi.get("/staff?limit=200").then((r) => setStaffs(r.data.data || []));
   }, []);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const p = new URLSearchParams({ ...filters, page, limit });
-      const res = await adminApi.get(`/nhan-su/bang-luong?${p}`);
+      const params = new URLSearchParams({ ...filters, page, limit });
+      const res = await adminApi.get(`/nhan-su/bang-luong?${params}`);
       setData(res.data.data || []);
       setTotal(res.data.total || 0);
-    } catch { setData([]); }
-    finally { setLoading(false); }
+    } catch {
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { fetchData(); }, [filters, page]);
+  useEffect(() => {
+    fetchData();
+  }, [filters, page]);
 
   const handleTinhLuong = async () => {
-    if (!tinhForm.LuongCoBanMacDinh) { setTinhMsg("Vui lòng nhập lương cơ bản"); return; }
-    setTinhLoading(true); setTinhMsg("");
+    if (!tinhForm.LuongCoBanMacDinh) {
+      setTinhMsg("Vui lòng nhập lương cơ bản");
+      return;
+    }
+    setTinhLoading(true);
+    setTinhMsg("");
     try {
       const res = await adminApi.post("/nhan-su/bang-luong/tinh-luong", tinhForm);
-      setTinhMsg("✅ " + res.data.message);
+      setTinhMsg(`✅ ${res.data.message}`);
       fetchData();
     } catch (err) {
-      setTinhMsg("❌ " + (err.response?.data?.message || "Lỗi tính lương"));
-    } finally { setTinhLoading(false); }
+      setTinhMsg(`❌ ${err.response?.data?.message || "Lỗi tính lương"}`);
+    } finally {
+      setTinhLoading(false);
+    }
   };
 
   const handleThanhToan = async (id) => {
@@ -71,7 +81,9 @@ const BangLuongList = () => {
     try {
       await adminApi.patch(`/nhan-su/bang-luong/${id}/thanh-toan`);
       fetchData();
-    } catch { alert("Lỗi xác nhận thanh toán"); }
+    } catch {
+      alert("Lỗi xác nhận thanh toán");
+    }
   };
 
   const handleDelete = async (id) => {
@@ -79,7 +91,9 @@ const BangLuongList = () => {
     try {
       await adminApi.delete(`/nhan-su/bang-luong/${id}`);
       fetchData();
-    } catch { alert("Lỗi xóa"); }
+    } catch {
+      alert("Lỗi xóa");
+    }
   };
 
   const openEdit = (row) => {
@@ -104,194 +118,204 @@ const BangLuongList = () => {
       fetchData();
     } catch (err) {
       setEditError(err.response?.data?.message || "Lỗi cập nhật");
-    } finally { setEditSaving(false); }
+    } finally {
+      setEditSaving(false);
+    }
   };
 
   const fmtMoney = (n) => Number(n || 0).toLocaleString("vi-VN") + "₫";
-  const tongLuong = data.reduce((s, d) => s + Number(d.TongLuong || 0), 0);
-  const daTT = data.filter(d => d.TrangThai === "da_thanh_toan").length;
+  const tongLuong = data.reduce((sum, row) => sum + Number(row.TongLuong || 0), 0);
+  const daTT = data.filter((row) => row.TrangThai === "da_thanh_toan").length;
 
-  const previewTong = editForm.LuongCoBan !== undefined
-    ? Math.round((Number(editForm.SoNgayLam || 0) / 26) * Number(editForm.LuongCoBan) + Number(editForm.PhuCap || 0) - Number(editForm.KhauTru || 0))
-    : 0;
+  const previewTong =
+    editForm.LuongCoBan !== undefined
+      ? Math.round(
+          (Number(editForm.SoNgayLam || 0) / 26) * Number(editForm.LuongCoBan) +
+            Number(editForm.PhuCap || 0) -
+            Number(editForm.KhauTru || 0)
+        )
+      : 0;
 
   return (
-    <div className="p-6 md:p-8 space-y-8 bg-slate-50 min-h-screen">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+    <div className="admin-page-stack">
+      <div className="page-header page-header-row">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-3">
-            <span className="text-4xl drop-shadow-md">💰</span> 
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-indigo-600">
-              Bảng Lương
-            </span>
-          </h1>
-          <p className="text-slate-500 font-medium text-sm mt-2 ml-1">
-            Tổng hợp, tính toán và thanh toán lương nhân sự
-          </p>
+          <h1 className="page-title">💰 Bảng Lương</h1>
+          <p className="page-subtitle">Tổng hợp, tính toán và thanh toán lương nhân sự</p>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <Link to="/admin/nhan-su/cham-cong"
-            className="inline-flex items-center gap-2 bg-white border-2 border-slate-200 hover:border-blue-300 text-slate-600 hover:text-blue-600 px-6 py-3 rounded-2xl font-bold text-sm transition-all shadow-sm hover:shadow-md">
-            🕐 Chấm Công
+        <div className="page-actions">
+          <Link to="/admin/nhan-su/cham-cong" className="btn btn-secondary">
+            🕐 Chấm công
           </Link>
-          <button onClick={() => { setShowTinhLuong(true); setTinhMsg(""); }}
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5">
-            <span className="text-lg leading-none">⚡</span> Tính lương tự động
+          <button type="button" onClick={() => { setShowTinhLuong(true); setTinhMsg(""); }} className="btn btn-primary">
+            ⚡ Tính lương tự động
           </button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-        <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full blur-2xl group-hover:bg-blue-100 transition-colors"></div>
-          <div className="relative">
-             <div className="flex justify-between items-start mb-4">
-               <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center text-xl shadow-inner">👥</div>
-             </div>
-             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Mã NV Trả Lương</p>
-             <p className="text-3xl font-black text-slate-800">{total}</p>
+      <div className="stats-grid stats-grid-tight">
+        <div className="stat-card column">
+          <div className="stat-icon-wrap primary">👥</div>
+          <div>
+            <div className="stat-number">{total}</div>
+            <div className="stat-label">Mã NV trả lương</div>
           </div>
         </div>
-        <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 rounded-full blur-2xl group-hover:bg-emerald-100 transition-colors"></div>
-          <div className="relative">
-             <div className="flex justify-between items-start mb-4">
-               <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl shadow-inner">✅</div>
-             </div>
-             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Đã Thanh Toán</p>
-             <p className="text-3xl font-black text-emerald-600">{daTT}</p>
+        <div className="stat-card column">
+          <div className="stat-icon-wrap success">✅</div>
+          <div>
+            <div className="stat-number value-success">{daTT}</div>
+            <div className="stat-label">Đã thanh toán</div>
           </div>
         </div>
-        <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-amber-50 rounded-full blur-2xl group-hover:bg-amber-100 transition-colors"></div>
-          <div className="relative">
-             <div className="flex justify-between items-start mb-4">
-               <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center text-xl shadow-inner">⏳</div>
-             </div>
-             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Chưa Thanh Toán</p>
-             <p className="text-3xl font-black text-amber-500">{total - daTT}</p>
+        <div className="stat-card column">
+          <div className="stat-icon-wrap warning">⏳</div>
+          <div>
+            <div className="stat-number value-warning">{total - daTT}</div>
+            <div className="stat-label">Chưa thanh toán</div>
           </div>
         </div>
-        <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[2rem] p-6 shadow-xl shadow-blue-900/20 relative overflow-hidden text-white">
-          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-          <div className="relative">
-             <div className="flex justify-between items-start mb-4">
-               <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-xl border border-white/20">💵</div>
-             </div>
-             <p className="text-xs font-bold text-blue-200 uppercase tracking-wider mb-1">Tổng Quỹ Lương Trang Này</p>
-             <p className="text-3xl font-black tracking-tight">{fmtMoney(tongLuong)}</p>
+        <div className="stat-card column">
+          <div className="stat-icon-wrap info">💵</div>
+          <div>
+            <div className="stat-number value-accent">{fmtMoney(tongLuong)}</div>
+            <div className="stat-label">Tổng quỹ lương trang này</div>
           </div>
         </div>
       </div>
 
-      {/* Filters Container */}
-      <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/40 border border-slate-100 p-6 relative overflow-hidden">
-        <div className="flex flex-col md:flex-row gap-4 items-end">
-          <div className="w-full md:w-32">
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Tháng</label>
-            <select className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all appearance-none"
-              value={filters.thang} onChange={e => { setFilters(p => ({ ...p, thang: e.target.value })); setPage(1); }}>
-              {Array.from({length:12},(_,i)=>i+1).map(m => <option key={m} value={m}>Tháng {m}</option>)}
-            </select>
+      <div className="admin-card">
+        <div className="admin-card-header admin-card-header-stack">
+          <div>
+            <span className="admin-card-title">Bộ lọc lương</span>
+            <p className="card-caption">Xem bảng lương theo tháng, năm và nhân viên cụ thể.</p>
           </div>
-          <div className="w-full md:w-32">
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Năm</label>
-            <select className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all appearance-none"
-              value={filters.nam} onChange={e => { setFilters(p => ({ ...p, nam: e.target.value })); setPage(1); }}>
-              {[2024,2025,2026,2027].map(y => <option key={y} value={y}>{y}</option>)}
-            </select>
+          <div className="filters-row">
+            <div className="filter-field">
+              <label className="filter-label">Tháng</label>
+              <select
+                className="admin-form-input admin-select"
+                value={filters.thang}
+                onChange={(e) => {
+                  setFilters((prev) => ({ ...prev, thang: e.target.value }));
+                  setPage(1);
+                }}
+              >
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                  <option key={m} value={m}>
+                    Tháng {m}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="filter-field">
+              <label className="filter-label">Năm</label>
+              <select
+                className="admin-form-input admin-select"
+                value={filters.nam}
+                onChange={(e) => {
+                  setFilters((prev) => ({ ...prev, nam: e.target.value }));
+                  setPage(1);
+                }}
+              >
+                {[2024, 2025, 2026, 2027].map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="filter-field filter-field-grow">
+              <label className="filter-label">Nhân viên</label>
+              <select
+                className="admin-form-input admin-select"
+                value={filters.maNV}
+                onChange={(e) => {
+                  setFilters((prev) => ({ ...prev, maNV: e.target.value }));
+                  setPage(1);
+                }}
+              >
+                <option value="">-- Tất cả nhân viên --</option>
+                {staffs.map((s) => (
+                  <option key={s.MaNV} value={s.MaNV}>
+                    {s.TenNV}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="filter-actions">
+              <button type="button" onClick={fetchData} className="btn btn-secondary">
+                Lọc dữ liệu
+              </button>
+            </div>
           </div>
-          <div className="w-full md:flex-1">
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nhân viên</label>
-            <select className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all appearance-none"
-              value={filters.maNV} onChange={e => { setFilters(p => ({ ...p, maNV: e.target.value })); setPage(1); }}>
-              <option value="">-- Tất cả nhân viên --</option>
-              {staffs.map(s => <option key={s.MaNV} value={s.MaNV}>{s.TenNV}</option>)}
-            </select>
-          </div>
-          <button onClick={fetchData}
-            className="w-full md:w-auto px-8 py-3 rounded-2xl bg-white border-2 border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 text-sm font-bold shadow-sm active:scale-95 transition-all">
-            Lọc Dữ Liệu
-          </button>
         </div>
-      </div>
 
-      {/* Main Table */}
-      <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-32 text-blue-500 gap-4">
-            <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-            <p className="font-medium animate-pulse text-slate-500">Đang đồng bộ dữ liệu...</p>
+          <div className="admin-loading">
+            <div className="spinner" />
+            Đang đồng bộ dữ liệu...
           </div>
         ) : data.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-32 px-4 text-center">
-            <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
-              <span className="text-5xl opacity-50 grayscale">💵</span>
-            </div>
-            <h3 className="text-xl font-bold text-slate-700 mb-2">Chưa có bảng lương</h3>
-            <p className="text-slate-500 max-w-sm mx-auto">Sử dụng nút "Tính lương tự động" để tạo dữ liệu cho tháng được chọn.</p>
+          <div className="admin-empty">
+            <div className="admin-empty-icon">💵</div>
+            <p>Chưa có bảng lương cho bộ lọc hiện tại.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-slate-50 border-b border-slate-100">
+          <div className="table-wrapper">
+            <table className="admin-table">
+              <thead>
                 <tr>
-                  <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Nhân Viên</th>
-                  <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">Ngày Làm</th>
-                  <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Lương Cơ Bản</th>
-                  <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Phụ Cấp</th>
-                  <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Khấu Trừ</th>
-                  <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">Trạng Thái</th>
-                  <th className="px-6 py-5 text-xs font-bold text-sky-600 uppercase tracking-wider text-right">Thực Nhận</th>
-                  <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">Thao Tác</th>
+                  <th>Nhân viên</th>
+                  <th className="text-center">Ngày làm</th>
+                  <th className="text-right">Lương cơ bản</th>
+                  <th className="text-right">Phụ cấp</th>
+                  <th className="text-right">Khấu trừ</th>
+                  <th className="text-center">Trạng thái</th>
+                  <th className="text-right">Thực nhận</th>
+                  <th className="text-center">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
-                {data.map(row => (
-                  <tr key={row.MaBL} className="hover:bg-blue-50/50 transition-colors group">
-                    <td className="px-6 py-4">
-                       <p className="font-bold text-slate-800">{row.TenNV}</p>
-                       <p className="text-[11px] font-medium text-slate-400">{row.MaNV}</p>
+              <tbody>
+                {data.map((row) => (
+                  <tr key={row.MaBL}>
+                    <td>
+                      <div className="td-primary">{row.TenNV}</div>
+                      <div className="card-caption">{row.MaNV}</div>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                       <p className="font-bold text-slate-700">{row.SoNgayLam} <span className="font-normal text-slate-400">ngày</span></p>
-                       <p className="text-[11px] font-medium text-slate-400">{Number(row.SoGioLam || 0).toFixed(1)}h</p>
+                    <td className="text-center">
+                      <div className="value-strong">{row.SoNgayLam} ngày</div>
+                      <div className="card-caption">{Number(row.SoGioLam || 0).toFixed(1)}h</div>
                     </td>
-                    <td className="px-6 py-4 text-right font-medium text-slate-600">{fmtMoney(row.LuongCoBan)}</td>
-                    <td className="px-6 py-4 text-right font-bold text-emerald-500">+{fmtMoney(row.PhuCap)}</td>
-                    <td className="px-6 py-4 text-right font-bold text-red-500">-{fmtMoney(row.KhauTru)}</td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="text-right">{fmtMoney(row.LuongCoBan)}</td>
+                    <td className="text-right value-success">+{fmtMoney(row.PhuCap)}</td>
+                    <td className="text-right value-danger">-{fmtMoney(row.KhauTru)}</td>
+                    <td className="text-center">
                       {row.TrangThai === "da_thanh_toan" ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Đã TT
-                        </span>
+                        <span className="badge badge-success">Đã TT</span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> Chờ TT
-                        </span>
+                        <span className="badge badge-warning">Chờ TT</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-right">
-                       <span className="font-black text-blue-600 text-lg tracking-tight bg-blue-50 px-3 py-1 rounded-lg">
-                         {fmtMoney(row.TongLuong)}
-                       </span>
+                    <td className="text-right">
+                      <span className="value-accent value-strong">{fmtMoney(row.TongLuong)}</span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex justify-center gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => openEdit(row)} title="Sửa"
-                          className="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-amber-500 hover:text-white font-medium transition-all shadow-sm">
+                    <td>
+                      <div className="table-actions-center">
+                        <button type="button" onClick={() => openEdit(row)} className="icon-btn" title="Sửa">
                           ✏️
                         </button>
                         {row.TrangThai === "chua_thanh_toan" && (
-                          <button onClick={() => handleThanhToan(row.MaBL)} title="Xác nhận thanh toán"
-                            className="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-emerald-500 hover:text-white font-medium transition-all shadow-sm">
+                          <button
+                            type="button"
+                            onClick={() => handleThanhToan(row.MaBL)}
+                            className="icon-btn"
+                            title="Xác nhận thanh toán"
+                          >
                             💸
                           </button>
                         )}
-                        <button onClick={() => handleDelete(row.MaBL)} title="Xóa"
-                          className="w-8 h-8 flex items-center justify-center rounded-xl bg-red-50 text-red-600 hover:bg-red-500 hover:text-white font-medium transition-all shadow-sm">
+                        <button type="button" onClick={() => handleDelete(row.MaBL)} className="icon-btn icon-btn-danger" title="Xóa">
                           🗑️
                         </button>
                       </div>
@@ -304,154 +328,191 @@ const BangLuongList = () => {
         )}
 
         {totalPages > 1 && (
-          <div className="px-6 py-5 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-            <span className="text-slate-500 font-medium text-sm">Trang {page} / {totalPages}</span>
-            <div className="flex gap-2">
-              <button onClick={() => setPage(p=>p-1)} disabled={page===1}
-                className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 font-bold text-slate-600 text-sm shadow-sm transition-all">Trở lại</button>
-              <button onClick={() => setPage(p=>p+1)} disabled={page===totalPages}
-                className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 font-bold text-slate-600 text-sm shadow-sm transition-all">Tiếp</button>
+          <div className="pagination">
+            <span className="pagination-info">Trang {page} / {totalPages}</span>
+            <div className="pagination-btns">
+              <button type="button" className="page-btn" onClick={() => setPage((p) => p - 1)} disabled={page === 1}>
+                ←
+              </button>
+              <button type="button" className="page-btn" onClick={() => setPage((p) => p + 1)} disabled={page === totalPages}>
+                →
+              </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Modal Tính Lương Hàng Loạt */}
       {showTinhLuong && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowTinhLuong(false)}></div>
-          <div className="bg-white rounded-[2rem] shadow-2xl shadow-blue-900/20 w-full max-w-md overflow-hidden relative z-10 animate-scale-in">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
-            <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="font-extrabold text-slate-800 text-xl flex items-center gap-2">⚡ Tính Lương Hàng Loạt</h2>
-              <button onClick={() => setShowTinhLuong(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm">✕</button>
+        <div className="admin-modal-wrap">
+          <div className="admin-modal-backdrop" onClick={() => setShowTinhLuong(false)} />
+          <div className="admin-modal admin-modal-sm">
+            <div className="admin-modal-header">
+              <div>
+                <div className="admin-modal-title">⚡ Tính Lương Hàng Loạt</div>
+                <div className="admin-modal-subtitle">Tạo dữ liệu cho toàn bộ nhân viên theo tháng đã chọn</div>
+              </div>
+              <button type="button" onClick={() => setShowTinhLuong(false)} className="icon-btn" aria-label="Đóng">
+                ✕
+              </button>
             </div>
-            <div className="p-8 space-y-5">
-              <p className="text-sm font-medium text-blue-700 bg-blue-50/50 rounded-2xl px-5 py-4 border border-blue-100 leading-relaxed shadow-inner">
-                Tự động tạo bảng lương cho <strong>tất cả</strong> nhân viên dựa trên nhật ký chấm công của tháng được chọn.
-              </p>
-              
-              {tinhMsg && (
-                <div className={`rounded-2xl px-5 py-4 text-sm font-bold shadow-inner ${tinhMsg.startsWith("✅") ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-red-50 text-red-600 border border-red-100"}`}>
-                  {tinhMsg}
-                </div>
-              )}
-              
-              <div className="grid grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Tháng</label>
-                  <select className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-blue-500 appearance-none"
-                    value={tinhForm.Thang} onChange={e => setTinhForm(p=>({...p,Thang:e.target.value}))}>
-                    {Array.from({length:12},(_,i)=>i+1).map(m=><option key={m} value={m}>Tháng {m}</option>)}
+            <div className="admin-modal-body">
+              <div className="info-banner">
+                Tự động tạo bảng lương cho tất cả nhân viên dựa trên nhật ký chấm công của tháng được chọn.
+              </div>
+
+              {tinhMsg && <div className={tinhMsg.startsWith("✅") ? "admin-success" : "admin-error"}>{tinhMsg}</div>}
+
+              <div className="form-grid">
+                <div className="form-group">
+                  <label className="form-label">Tháng</label>
+                  <select
+                    className="admin-form-input admin-select"
+                    value={tinhForm.Thang}
+                    onChange={(e) => setTinhForm((prev) => ({ ...prev, Thang: e.target.value }))}
+                  >
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                      <option key={m} value={m}>
+                        Tháng {m}
+                      </option>
+                    ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Năm</label>
-                  <select className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-blue-500 appearance-none"
-                    value={tinhForm.Nam} onChange={e => setTinhForm(p=>({...p,Nam:e.target.value}))}>
-                    {[2024,2025,2026,2027].map(y=><option key={y} value={y}>{y}</option>)}
+                <div className="form-group">
+                  <label className="form-label">Năm</label>
+                  <select
+                    className="admin-form-input admin-select"
+                    value={tinhForm.Nam}
+                    onChange={(e) => setTinhForm((prev) => ({ ...prev, Nam: e.target.value }))}
+                  >
+                    {[2024, 2025, 2026, 2027].map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
                   </select>
                 </div>
-                <div className="col-span-2">
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Lương cơ bản (26 ngày) <span className="text-red-500">*</span></label>
-                  <input type="number" min="0" step="100000"
-                    className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 text-base font-black text-slate-700 outline-none focus:border-blue-500"
+                <div className="form-group form-span-2">
+                  <label className="form-label">
+                    Lương cơ bản (26 ngày)<span className="required">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="100000"
+                    className="admin-form-input"
                     value={tinhForm.LuongCoBanMacDinh}
-                    onChange={e => setTinhForm(p=>({...p,LuongCoBanMacDinh:Number(e.target.value)}))} />
+                    onChange={(e) => setTinhForm((prev) => ({ ...prev, LuongCoBanMacDinh: Number(e.target.value) }))}
+                  />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Phụ cấp chung</label>
-                  <input type="number" min="0" step="10000"
-                    className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold text-emerald-600 outline-none focus:border-blue-500"
+                <div className="form-group">
+                  <label className="form-label">Phụ cấp chung</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="10000"
+                    className="admin-form-input"
                     value={tinhForm.PhuCap}
-                    onChange={e => setTinhForm(p=>({...p,PhuCap:Number(e.target.value)}))} />
+                    onChange={(e) => setTinhForm((prev) => ({ ...prev, PhuCap: Number(e.target.value) }))}
+                  />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Trừ quỹ/BHXH</label>
-                  <input type="number" min="0" step="10000"
-                    className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold text-red-500 outline-none focus:border-blue-500"
+                <div className="form-group">
+                  <label className="form-label">Trừ quỹ/BHXH</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="10000"
+                    className="admin-form-input"
                     value={tinhForm.KhauTru}
-                    onChange={e => setTinhForm(p=>({...p,KhauTru:Number(e.target.value)}))} />
+                    onChange={(e) => setTinhForm((prev) => ({ ...prev, KhauTru: Number(e.target.value) }))}
+                  />
                 </div>
               </div>
             </div>
-            <div className="px-8 py-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
-              <button onClick={() => setShowTinhLuong(false)}
-                className="px-6 py-3 rounded-2xl border-2 border-slate-200 text-slate-600 hover:bg-white font-bold text-sm transition-colors">Hủy</button>
-              <button onClick={handleTinhLuong} disabled={tinhLoading}
-                className="px-8 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-sm shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 active:scale-95 disabled:opacity-50 transition-all">
-                {tinhLoading ? "Hệ thống đang tính..." : "Chạy Tính Lương"}
+            <div className="admin-modal-footer">
+              <button type="button" onClick={() => setShowTinhLuong(false)} className="btn btn-secondary">
+                Hủy
+              </button>
+              <button type="button" onClick={handleTinhLuong} disabled={tinhLoading} className="btn btn-primary">
+                {tinhLoading ? "Hệ thống đang tính..." : "Chạy tính lương"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal Sửa Bảng Lương Cá Nhân */}
       {editRow && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setEditRow(null)}></div>
-          <div className="bg-white rounded-[2rem] shadow-2xl shadow-blue-900/20 w-full max-w-md overflow-hidden relative z-10 animate-scale-in">
-            <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
+        <div className="admin-modal-wrap">
+          <div className="admin-modal-backdrop" onClick={() => setEditRow(null)} />
+          <div className="admin-modal admin-modal-sm">
+            <div className="admin-modal-header">
               <div>
-                <h2 className="font-extrabold text-slate-800 text-xl flex items-center gap-2 mb-1">✏️ Điều Chỉnh Cá Nhân</h2>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{editRow.TenNV} • Tháng {editRow.Thang}/{editRow.Nam}</p>
+                <div className="admin-modal-title">✏️ Điều Chỉnh Cá Nhân</div>
+                <div className="admin-modal-subtitle">
+                  {editRow.TenNV} • Tháng {editRow.Thang}/{editRow.Nam}
+                </div>
               </div>
-              <button onClick={() => setEditRow(null)} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm">✕</button>
+              <button type="button" onClick={() => setEditRow(null)} className="icon-btn" aria-label="Đóng">
+                ✕
+              </button>
             </div>
-            
-            <div className="p-8 space-y-5">
-              {editError && <div className="bg-red-50 text-red-600 border border-red-200 rounded-xl px-4 py-3 text-sm font-bold shadow-inner">{editError}</div>}
-              
-              <div className="grid grid-cols-2 gap-5">
+            <div className="admin-modal-body">
+              {editError && <div className="admin-error">{editError}</div>}
+
+              <div className="form-grid">
                 {[
-                  ["SoNgayLam","Số ngày làm","number"],
-                  ["SoGioLam","Số giờ làm","number"],
-                  ["LuongCoBan","Lương cơ bản","number"],
-                  ["PhuCap","Phụ cấp (+)","number"],
-                  ["KhauTru","Khấu trừ (-)","number"],
+                  ["SoNgayLam", "Số ngày làm", "number"],
+                  ["SoGioLam", "Số giờ làm", "number"],
+                  ["LuongCoBan", "Lương cơ bản", "number"],
+                  ["PhuCap", "Phụ cấp (+)", "number"],
+                  ["KhauTru", "Khấu trừ (-)", "number"],
                 ].map(([key, label, type]) => (
-                  <div key={key} className={key === "LuongCoBan" ? "col-span-2" : ""}>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{label}</label>
-                    <input type={type} min="0"
-                      className={`w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-colors ${
-                         key === "PhuCap" ? "text-emerald-600" :
-                         key === "KhauTru" ? "text-red-500" : "text-slate-700"
-                      }`}
+                  <div key={key} className={`form-group ${key === "LuongCoBan" ? "form-span-2" : ""}`}>
+                    <label className="form-label">{label}</label>
+                    <input
+                      type={type}
+                      min="0"
+                      className="admin-form-input"
                       value={editForm[key] || 0}
-                      onChange={e => setEditForm(p=>({...p,[key]:Number(e.target.value)}))} />
+                      onChange={(e) => setEditForm((prev) => ({ ...prev, [key]: Number(e.target.value) }))}
+                    />
                   </div>
                 ))}
-                
-                <div className="col-span-2">
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Trạng thái thanh toán</label>
-                  <select className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-blue-500 appearance-none"
-                    value={editForm.TrangThai} onChange={e => setEditForm(p=>({...p,TrangThai:e.target.value}))}>
+
+                <div className="form-group form-span-2">
+                  <label className="form-label">Trạng thái thanh toán</label>
+                  <select
+                    className="admin-form-input admin-select"
+                    value={editForm.TrangThai}
+                    onChange={(e) => setEditForm((prev) => ({ ...prev, TrangThai: e.target.value }))}
+                  >
                     <option value="chua_thanh_toan">⏳ Chưa thanh toán</option>
                     <option value="da_thanh_toan">✅ Đã thanh toán</option>
                   </select>
                 </div>
-                <div className="col-span-2">
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Ghi chú</label>
-                  <input type="text" placeholder="Thưởng lễ, phạt đi trễ..."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-medium text-slate-700 outline-none focus:border-blue-500"
+
+                <div className="form-group form-span-2">
+                  <label className="form-label">Ghi chú</label>
+                  <input
+                    type="text"
+                    placeholder="Thưởng lễ, phạt đi trễ..."
+                    className="admin-form-input"
                     value={editForm.GhiChu}
-                    onChange={e => setEditForm(p=>({...p,GhiChu:e.target.value}))} />
+                    onChange={(e) => setEditForm((prev) => ({ ...prev, GhiChu: e.target.value }))}
+                  />
                 </div>
               </div>
-              
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl px-5 py-4 flex items-center justify-between border border-blue-100 mt-2 shadow-inner">
-                <span className="text-xs font-bold text-blue-800 uppercase tracking-wider">Hạch Toán Tạm Tính</span>
-                <span className="text-xl font-black text-blue-700">{Number(previewTong || 0).toLocaleString("vi-VN")}₫</span>
+
+              <div className="preview-card">
+                <span className="preview-card-label">Hạch toán tạm tính</span>
+                <span className="preview-card-value">{Number(previewTong || 0).toLocaleString("vi-VN")}₫</span>
               </div>
             </div>
-            
-            <div className="px-8 py-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
-              <button onClick={() => setEditRow(null)}
-                className="px-6 py-3 rounded-2xl border-2 border-slate-200 text-slate-600 hover:bg-white font-bold text-sm transition-colors">Hủy</button>
-              <button onClick={handleEditSave} disabled={editSaving}
-                className="px-8 py-3 rounded-2xl bg-blue-600 text-white font-bold text-sm shadow-lg shadow-blue-500/30 hover:bg-blue-700 active:scale-95 disabled:opacity-50 transition-all">
-                {editSaving ? "Đang lưu..." : "💾 Cập Nhật"}
+            <div className="admin-modal-footer">
+              <button type="button" onClick={() => setEditRow(null)} className="btn btn-secondary">
+                Hủy
+              </button>
+              <button type="button" onClick={handleEditSave} disabled={editSaving} className="btn btn-primary">
+                {editSaving ? "Đang lưu..." : "💾 Cập nhật"}
               </button>
             </div>
           </div>
