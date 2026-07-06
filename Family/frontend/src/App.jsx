@@ -49,6 +49,9 @@ import NhapHangCreate from './pages/admin/nhapHang/NhapHangCreate';
 import NhapHangDetail from './pages/admin/nhapHang/NhapHangDetail';
 import ChamCongList from './pages/admin/nhanSu/ChamCongList';
 import BangLuongList from './pages/admin/nhanSu/BangLuongList';
+import CanhBaoTonKhoPage from './pages/admin/tonKho/CanhBaoTonKhoPage';
+import KhachHangVipPage from './pages/admin/khachHangVip/KhachHangVipPage';
+import DuBaoXuHuongPage from './pages/admin/duBao/DuBaoXuHuongPage';
 
 function App() {
   return (
@@ -125,6 +128,11 @@ function App() {
             {/* Nhân sự - Chấm công & Bảng lương */}
             <Route path="nhan-su/cham-cong" element={<ChamCongList />} />
             <Route path="nhan-su/bang-luong" element={<BangLuongList />} />
+
+            {/* Phân tích & AI */}
+            <Route path="canh-bao-ton-kho" element={<CanhBaoTonKhoPage />} />
+            <Route path="khach-hang-vip" element={<KhachHangVipPage />} />
+            <Route path="du-bao" element={<DuBaoXuHuongPage />} />
 
             {/* Reports */}
             <Route path="reports" element={<ReportPage />} />

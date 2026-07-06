@@ -3,6 +3,7 @@ import pool from "../config/db.js";
 
 const genMaNH = () => "NH" + crypto.randomBytes(3).toString("hex").toUpperCase();
 const genMaCTNH = () => "CTNH" + crypto.randomBytes(3).toString("hex").toUpperCase();
+const genMaLo = () => "LO" + crypto.randomBytes(4).toString("hex").toUpperCase();
 
 /**
  * GET /api/admin/nhap-hang?q=&page=1&limit=15
@@ -82,6 +83,7 @@ export const getNhapHangById = async (req, res) => {
  */
 export const createNhapHang = async (req, res) => {
   const { MaNCC, MaNV, GhiChu, chiTiet } = req.body;
+  // chiTiet[]: { MaSP, SoLuong, DonGiaNhap, HanSuDung?, ViTriKho? }
   if (!MaNCC || !MaNV || !chiTiet || chiTiet.length === 0) {
     return res.status(400).json({ message: "Thiếu thông tin bắt buộc (Nhà cung cấp, Nhân viên, Chi tiết sản phẩm)" });
   }
@@ -114,10 +116,25 @@ export const createNhapHang = async (req, res) => {
         "INSERT INTO CT_NHAP_HANG (MaCTNH, MaNH, MaSP, SoLuong, DonGiaNhap) VALUES (?, ?, ?, ?, ?)",
         [MaCTNH, MaNH, ct.MaSP, ct.SoLuong, ct.DonGiaNhap]
       );
-      // Cập nhật tồn kho
+
+      // Cập nhật tồn kho sản phẩm
       await conn.query(
         "UPDATE SAN_PHAM SET TonKho = TonKho + ? WHERE MaSP = ?",
         [ct.SoLuong, ct.MaSP]
+      );
+
+      // Tạo lô hàng tương ứng trong LO_HANG
+      let MaLo = genMaLo();
+      let [chkLo] = await conn.query("SELECT MaLo FROM LO_HANG WHERE MaLo = ?", [MaLo]);
+      while (chkLo.length > 0) {
+        MaLo = genMaLo();
+        [chkLo] = await conn.query("SELECT MaLo FROM LO_HANG WHERE MaLo = ?", [MaLo]);
+      }
+      await conn.query(
+        `INSERT INTO LO_HANG (MaLo, MaSP, MaNH, SoLuongNhap, SoLuongConLai, NgayNhapKho, HanSuDung, ViTriKho, GhiChu)
+         VALUES (?, ?, ?, ?, ?, CURDATE(), ?, ?, ?)`,
+        [MaLo, ct.MaSP, MaNH, ct.SoLuong, ct.SoLuong,
+          ct.HanSuDung || null, ct.ViTriKho || null, ct.GhiChu || null]
       );
     }
 
@@ -130,6 +147,7 @@ export const createNhapHang = async (req, res) => {
     conn.release();
   }
 };
+
 
 /**
  * DELETE /api/admin/nhap-hang/:id

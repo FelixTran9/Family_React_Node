@@ -23,8 +23,9 @@ const menuGroups = [
   {
     label: "Kho hàng",
     items: [
-      { to: "/admin/suppliers",  icon: "🏭", label: "Nhà cung cấp" },
-      { to: "/admin/nhap-hang",  icon: "📥", label: "Nhập hàng" },
+      { to: "/admin/suppliers",        icon: "🏭", label: "Nhà cung cấp" },
+      { to: "/admin/nhap-hang",        icon: "📥", label: "Nhập hàng" },
+      { to: "/admin/canh-bao-ton-kho", icon: "⚠️", label: "Cảnh báo tồn kho" },
     ],
   },
   {
@@ -33,6 +34,13 @@ const menuGroups = [
       { to: "/admin/staff",                 icon: "👥", label: "Nhân viên" },
       { to: "/admin/nhan-su/cham-cong",     icon: "🕐", label: "Chấm công" },
       { to: "/admin/nhan-su/bang-luong",    icon: "💰", label: "Bảng lương" },
+    ],
+  },
+  {
+    label: "Phân tích & AI",
+    items: [
+      { to: "/admin/khach-hang-vip", icon: "👑", label: "Khách hàng VIP" },
+      { to: "/admin/du-bao",         icon: "📈", label: "Dự báo xu hướng" },
     ],
   },
 ];

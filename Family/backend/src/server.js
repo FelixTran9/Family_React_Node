@@ -21,6 +21,12 @@ import customerAdminRoutes from "./routes/customerAdminRoutes.js";
 import supplierRoutes from "./routes/supplierRoutes.js";
 import nhapHangRoutes from "./routes/nhapHangRoutes.js";
 import nhanSuRoutes from "./routes/nhanSuRoutes.js";
+import canhBaoTonKhoRoutes from "./routes/canhBaoTonKhoRoutes.js";
+import cauHinhCanhBaoRoutes from "./routes/cauHinhCanhBaoRoutes.js";
+import loHangRoutes from "./routes/loHangRoutes.js";
+import phanLoaiKhachHangRoutes from "./routes/phanLoaiKhachHangRoutes.js";
+import duBaoXuHuongRoutes from "./routes/duBaoXuHuongRoutes.js";
+import nhatKyAiRoutes from "./routes/nhatKyAiRoutes.js";
 
 // Upload & Customer Order
 import { upload, uploadProductImage } from "./controllers/uploadController.js";
@@ -73,6 +79,12 @@ app.use("/api/admin/customers", customerAdminRoutes);
 app.use("/api/admin/suppliers", supplierRoutes);
 app.use("/api/admin/nhap-hang", nhapHangRoutes);
 app.use("/api/admin/nhan-su", nhanSuRoutes);
+app.use("/api/admin/canh-bao-ton-kho", canhBaoTonKhoRoutes);
+app.use("/api/admin/cau-hinh-canh-bao", cauHinhCanhBaoRoutes);
+app.use("/api/admin/lo-hang", loHangRoutes);
+app.use("/api/admin/phan-loai-khach-hang", phanLoaiKhachHangRoutes);
+app.use("/api/admin/du-bao", duBaoXuHuongRoutes);
+app.use("/api/admin/nhat-ky-ai", nhatKyAiRoutes);
 
 import fs from "fs";
 import pool from "./config/db.js";
