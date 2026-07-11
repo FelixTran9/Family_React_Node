@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Apr 12, 2026 at 09:52 AM
+-- Generation Time: Jul 06, 2026 at 05:54 AM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -29,6 +29,7 @@ USE `quanlycuahang`;
 -- Table structure for table `BANG_LUONG`
 --
 
+DROP TABLE IF EXISTS `BANG_LUONG`;
 CREATE TABLE `BANG_LUONG` (
   `MaLuong` varchar(20) NOT NULL,
   `Thang` int(11) NOT NULL,
@@ -42,7 +43,61 @@ CREATE TABLE `BANG_LUONG` (
   `MaCHT` varchar(20) DEFAULT NULL,
   `MaTL` varchar(20) DEFAULT NULL,
   `MaNV` varchar(20) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ;
+
+--
+-- Dumping data for table `BANG_LUONG`
+--
+
+INSERT INTO `BANG_LUONG` (`MaLuong`, `Thang`, `Nam`, `LuongCoBan`, `PhuCap`, `TienThuong`, `TienPhat`, `LuongThucLanh`, `NgayNhan`, `MaCHT`, `MaTL`, `MaNV`) VALUES
+('BL2CCE75', 4, 2026, 5000000.00, 300000.00, 0.00, 300000.00, 192308.00, '2026-04-27', NULL, NULL, 'NVFFFF86');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `CANH_BAO_TON_KHO`
+--
+
+DROP TABLE IF EXISTS `CANH_BAO_TON_KHO`;
+CREATE TABLE `CANH_BAO_TON_KHO` (
+  `MaCanhBao` int(11) NOT NULL,
+  `LoaiCanhBao` varchar(50) NOT NULL COMMENT 'ton_kho_lau | sap_het_han | da_het_han | ton_kho_thap',
+  `MaSP` varchar(20) NOT NULL COMMENT 'FK → SAN_PHAM',
+  `MaLo` varchar(20) DEFAULT NULL COMMENT 'FK → LO_HANG (nếu liên quan lô cụ thể)',
+  `NgayCanhBao` datetime NOT NULL DEFAULT current_timestamp(),
+  `NoiDung` text NOT NULL COMMENT 'Mô tả chi tiết cảnh báo',
+  `SoNgayTonKho` int(11) DEFAULT NULL COMMENT 'Số ngày hàng chưa bán (cho loại ton_kho_lau)',
+  `SoNgayConLai` int(11) DEFAULT NULL COMMENT 'Số ngày đến hạn (cho loại sap_het_han)',
+  `MucDoUuTien` tinyint(1) NOT NULL DEFAULT 2 COMMENT '1=Thấp, 2=Trung bình, 3=Cao, 4=Khẩn cấp',
+  `TrangThai` varchar(30) NOT NULL DEFAULT 'chua_xu_ly' COMMENT 'chua_xu_ly | dang_xu_ly | da_xu_ly | bo_qua',
+  `NguoiXuLy` varchar(20) DEFAULT NULL COMMENT 'FK → NHAN_VIEN hoặc TRO_LY_CUA_HANG',
+  `NgayXuLy` datetime DEFAULT NULL,
+  `GhiChuXuLy` text DEFAULT NULL
+) ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `CAU_HINH_CANH_BAO`
+--
+
+DROP TABLE IF EXISTS `CAU_HINH_CANH_BAO`;
+CREATE TABLE `CAU_HINH_CANH_BAO` (
+  `MaCauHinh` int(11) NOT NULL,
+  `MaDanhMuc` varchar(20) DEFAULT NULL COMMENT 'NULL = áp dụng cho tất cả danh mục',
+  `NguongTonKhoLau` int(11) NOT NULL DEFAULT 90 COMMENT 'Số ngày không bán → cảnh báo tồn lâu',
+  `NguongSapHetHan` int(11) NOT NULL DEFAULT 30 COMMENT 'Số ngày trước HSD → cảnh báo sắp hết hạn',
+  `NguongTonKhoThap` int(11) NOT NULL DEFAULT 10 COMMENT 'Số lượng tồn kho tối thiểu',
+  `KichHoat` tinyint(1) NOT NULL DEFAULT 1,
+  `NgayCapNhat` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Ngưỡng cảnh báo tồn kho, có thể tùy chỉnh theo danh mục sản phẩm';
+
+--
+-- Dumping data for table `CAU_HINH_CANH_BAO`
+--
+
+INSERT INTO `CAU_HINH_CANH_BAO` (`MaCauHinh`, `MaDanhMuc`, `NguongTonKhoLau`, `NguongSapHetHan`, `NguongTonKhoThap`, `KichHoat`, `NgayCapNhat`) VALUES
+(1, NULL, 90, 30, 10, 1, '2026-06-05 14:36:24');
 
 -- --------------------------------------------------------
 
@@ -50,6 +105,7 @@ CREATE TABLE `BANG_LUONG` (
 -- Table structure for table `CHAM_CONG`
 --
 
+DROP TABLE IF EXISTS `CHAM_CONG`;
 CREATE TABLE `CHAM_CONG` (
   `MaChamCong` int(11) NOT NULL,
   `Ngay` date NOT NULL,
@@ -63,12 +119,39 @@ CREATE TABLE `CHAM_CONG` (
   `MaNV` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `CHAM_CONG`
+--
+
+INSERT INTO `CHAM_CONG` (`MaChamCong`, `Ngay`, `GioVao`, `GioRa`, `SoGioLam`, `TangCa`, `TrangThai`, `MaCHT`, `MaTL`, `MaNV`) VALUES
+(3, '2026-04-27', NULL, NULL, 8.00, 0.00, 'di_lam', NULL, NULL, 'NVFFFF86');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `CHAM_SOC_KHACH_HANG`
+--
+
+DROP TABLE IF EXISTS `CHAM_SOC_KHACH_HANG`;
+CREATE TABLE `CHAM_SOC_KHACH_HANG` (
+  `MaCSKH` int(11) NOT NULL,
+  `MaKH` varchar(20) NOT NULL COMMENT 'FK → KHACH_HANG',
+  `LoaiTuongTac` varchar(50) NOT NULL COMMENT 'goi_dien | email | tang_qua | uu_dai_rieng | chuc_mung',
+  `NguoiThucHien` varchar(20) DEFAULT NULL COMMENT 'FK → NHAN_VIEN',
+  `NgayThucHien` datetime NOT NULL DEFAULT current_timestamp(),
+  `NoiDung` text DEFAULT NULL,
+  `KetQua` varchar(100) DEFAULT NULL COMMENT 'thanh_cong | khong_lien_lac | tu_choi',
+  `MaDon_LienQuan` varchar(64) DEFAULT NULL COMMENT 'FK → DON_BAN_HANG (nếu phát sinh đơn)',
+  `GhiChu` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Nhật ký chăm sóc khách hàng VIP / tiềm năng';
+
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `CT_DE_NGHI_NHAP`
 --
 
+DROP TABLE IF EXISTS `CT_DE_NGHI_NHAP`;
 CREATE TABLE `CT_DE_NGHI_NHAP` (
   `MaPhieuDeNghi` varchar(20) NOT NULL,
   `MaSP` varchar(20) NOT NULL,
@@ -83,6 +166,7 @@ CREATE TABLE `CT_DE_NGHI_NHAP` (
 -- Table structure for table `CT_DON_BAN`
 --
 
+DROP TABLE IF EXISTS `CT_DON_BAN`;
 CREATE TABLE `CT_DON_BAN` (
   `MaDon` varchar(64) NOT NULL,
   `MaSP` varchar(20) NOT NULL,
@@ -100,20 +184,14 @@ CREATE TABLE `CT_DON_BAN` (
 --
 
 INSERT INTO `CT_DON_BAN` (`MaDon`, `MaSP`, `SoLuong`, `DonGia`, `ThueVAT`, `ChietKhau`, `ThanhTien`, `MaKM_ApDung`, `SoTienGiam`) VALUES
-('DON1765863952WQY', 'SPDEPVHY', 1, 15000.00, 0.00, 0.00, 15000.00, NULL, 0.00),
-('DON1765863952WQY', 'SPENTW3F', 1, 15000.00, 0.00, 0.00, 15000.00, NULL, 0.00),
-('DON1765863952WQY', 'SPRFP0VZ', 1, 15000.00, 0.00, 0.00, 15000.00, NULL, 0.00),
-('DON17658641402M0', 'SPENTW3F', 1, 15000.00, 0.00, 0.00, 15000.00, NULL, 0.00),
-('DON17658641402M0', 'SPRFP0VZ', 3, 15000.00, 0.00, 0.00, 45000.00, NULL, 0.00),
-('DON1765864704SD5', 'SPENTW3F', 4, 15000.00, 0.00, 0.00, 60000.00, NULL, 0.00),
-('DON1765964867HCN', 'SPDEPVHY', 1, 15000.00, 0.00, 0.00, 15000.00, NULL, 0.00),
-('DON1765964867HCN', 'SPENTW3F', 1, 15000.00, 0.00, 0.00, 15000.00, NULL, 0.00),
-('DON1765964867HCN', 'SPRFP0VZ', 1, 15000.00, 0.00, 0.00, 15000.00, NULL, 0.00),
-('DON1766459064XHD', 'SPRFP0VZ', 2, 15000.00, 0.00, 0.00, 30000.00, NULL, 0.00),
-('DON17664661494NS', 'SPDEPVHY', 2, 15000.00, 0.00, 0.00, 30000.00, NULL, 0.00),
-('DON17664661494NS', 'SPENTW3F', 1, 15000.00, 0.00, 0.00, 15000.00, NULL, 0.00),
-('DON17664661494NS', 'SPRFP0VZ', 1, 15000.00, 0.00, 0.00, 15000.00, NULL, 0.00),
-('ĐHR9BCLDJG', 'SPDEPVHY', 5, 15000.00, 7500.00, 0.00, 82500.00, NULL, 0.00);
+('ĐH00755297', 'SPF783DA', 1, 231.00, 23.10, 0.00, 254.10, NULL, 0.00),
+('ĐH0409D6B8', 'SP3774B6', 1, 15000.00, 1500.00, 0.00, 16500.00, NULL, 0.00),
+('ĐH0409D6B8', 'SPDEPVHY', 1, 15000.00, 1500.00, 0.00, 16500.00, NULL, 0.00),
+('ĐH0409D6B8', 'SPENTW3F', 1, 15000.00, 1500.00, 0.00, 16500.00, NULL, 0.00),
+('ĐH326E3BD8', 'SP3774B6', 1, 15000.00, 1500.00, 0.00, 16500.00, NULL, 0.00),
+('ĐH5B3370D0', 'SPRFP0VZ', 1, 15000.00, 1500.00, 0.00, 16500.00, NULL, 0.00),
+('ĐH5D7861CB', 'SP3774B6', 4, 15000.00, 6000.00, 0.00, 66000.00, NULL, 0.00),
+('ĐHAC2BA04B', 'SPF783DA', 1, 231.00, 23.10, 0.00, 254.10, NULL, 0.00);
 
 -- --------------------------------------------------------
 
@@ -121,13 +199,36 @@ INSERT INTO `CT_DON_BAN` (`MaDon`, `MaSP`, `SoLuong`, `DonGia`, `ThueVAT`, `Chie
 -- Table structure for table `CT_KHUYEN_MAI`
 --
 
+DROP TABLE IF EXISTS `CT_KHUYEN_MAI`;
 CREATE TABLE `CT_KHUYEN_MAI` (
   `MaKM` varchar(20) NOT NULL,
   `MaSP` varchar(20) NOT NULL,
   `GiamGiaPhanTram` decimal(5,2) DEFAULT 0.00,
   `GiamGiaTien` decimal(15,2) DEFAULT 0.00,
   `MuaToiThieu` int(11) DEFAULT 1
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `CT_NHAP_HANG`
+--
+
+DROP TABLE IF EXISTS `CT_NHAP_HANG`;
+CREATE TABLE `CT_NHAP_HANG` (
+  `MaCTNH` varchar(20) NOT NULL,
+  `MaNH` varchar(20) NOT NULL,
+  `MaSP` varchar(20) NOT NULL,
+  `SoLuong` int(11) NOT NULL DEFAULT 0,
+  `DonGiaNhap` decimal(15,2) NOT NULL DEFAULT 0.00
+) ;
+
+--
+-- Dumping data for table `CT_NHAP_HANG`
+--
+
+INSERT INTO `CT_NHAP_HANG` (`MaCTNH`, `MaNH`, `MaSP`, `SoLuong`, `DonGiaNhap`) VALUES
+('CTNHDA0250', 'NH4FA746', 'SPRFP0VZ', 50, 8000.00);
 
 -- --------------------------------------------------------
 
@@ -135,6 +236,7 @@ CREATE TABLE `CT_KHUYEN_MAI` (
 -- Table structure for table `CUA_HANG_TRUONG`
 --
 
+DROP TABLE IF EXISTS `CUA_HANG_TRUONG`;
 CREATE TABLE `CUA_HANG_TRUONG` (
   `MaCHT` varchar(20) NOT NULL,
   `TenCHT` varchar(100) NOT NULL,
@@ -160,6 +262,7 @@ INSERT INTO `CUA_HANG_TRUONG` (`MaCHT`, `TenCHT`, `SDT`, `DiaChi`, `NgayNhanChuc
 -- Table structure for table `DANH_MUC_SP`
 --
 
+DROP TABLE IF EXISTS `DANH_MUC_SP`;
 CREATE TABLE `DANH_MUC_SP` (
   `MaDanhMuc` varchar(20) NOT NULL,
   `TenDanhMuc` varchar(100) NOT NULL,
@@ -180,9 +283,30 @@ INSERT INTO `DANH_MUC_SP` (`MaDanhMuc`, `TenDanhMuc`, `MoTa`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `DE_NGHI_DAT_HANG_DU_BAO`
+--
+
+DROP TABLE IF EXISTS `DE_NGHI_DAT_HANG_DU_BAO`;
+CREATE TABLE `DE_NGHI_DAT_HANG_DU_BAO` (
+  `MaDeNghi` int(11) NOT NULL,
+  `MaSP` varchar(20) NOT NULL COMMENT 'FK → SAN_PHAM',
+  `MaDuBao` int(11) NOT NULL COMMENT 'FK → DU_BAO_XU_HUONG',
+  `SoLuongDeNghi` int(11) NOT NULL DEFAULT 0,
+  `LyDoDeNghi` text DEFAULT NULL,
+  `TrangThai` varchar(30) NOT NULL DEFAULT 'cho_duyet' COMMENT 'cho_duyet | da_duyet | da_dat_hang | huy',
+  `NguoiDuyet` varchar(20) DEFAULT NULL COMMENT 'FK → TRO_LY_CUA_HANG hoặc CUA_HANG_TRUONG',
+  `NgayDeNghi` datetime NOT NULL DEFAULT current_timestamp(),
+  `NgayDuyet` datetime DEFAULT NULL,
+  `MaPhieuDeNghi_TaoRa` varchar(20) DEFAULT NULL COMMENT 'FK → PHIEU_DE_NGHI_NHAP (sau khi duyệt)'
+) ;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `DON_BAN_HANG`
 --
 
+DROP TABLE IF EXISTS `DON_BAN_HANG`;
 CREATE TABLE `DON_BAN_HANG` (
   `MaDon` varchar(64) NOT NULL,
   `NgayDat` datetime DEFAULT current_timestamp(),
@@ -205,15 +329,12 @@ CREATE TABLE `DON_BAN_HANG` (
 --
 
 INSERT INTO `DON_BAN_HANG` (`MaDon`, `NgayDat`, `TongTienHang`, `TongThueVAT`, `TongChietKhau`, `TongThanhToan`, `HinhThucTT`, `TrangThai`, `LoaiDon`, `SoLuong`, `MaKH`, `NguoiBan`, `MaKM_ApDung`, `MaSP_ApDung`) VALUES
-('DON1765095734izOr', '2025-12-07 08:22:14', 60000.00, 0.00, 0.00, 60000.00, 'COD', 'đã_giao', 'BanLe', 0, 'KH1765094524mbP', 'CUSTOMER', NULL, NULL),
-('DON1765863952WQY', '2025-12-16 05:45:52', 45000.00, 0.00, 0.00, 45000.00, 'COD', 'đã_giao', 'BanLe', 0, 'KH1765094524mbP', 'ONLINE', NULL, NULL),
-('DON17658641402M0', '2025-12-16 05:49:00', 60000.00, 0.00, 0.00, 60000.00, 'COD', 'đã_giao', 'BanLe', 0, 'KH1765094524mbP', 'ONLINE', NULL, NULL),
-('DON1765864704SD5', '2025-12-16 05:58:24', 60000.00, 0.00, 0.00, 60000.00, 'COD', 'đã_giao', 'BanLe', 0, 'KH1765094524mbP', 'ONLINE', NULL, NULL),
-('DON1765964867HCN', '2025-12-17 09:47:47', 45000.00, 0.00, 0.00, 45000.00, 'COD', 'ChoXuLy', 'BanLe', 0, 'KH1765094524mbP', 'ONLINE', NULL, NULL),
-('DON1766417122DTC', '2025-12-22 15:25:22', 45000.00, 0.00, 0.00, 45000.00, 'COD', 'đã_giao', 'BanLe', 0, 'KH1766416439fhp', 'ONLINE', NULL, NULL),
-('DON1766459064XHD', '2025-12-23 03:04:24', 30000.00, 0.00, 0.00, 30000.00, 'COD', 'ChoXuLy', 'BanLe', 0, 'KH1765094524mbP', 'ONLINE', NULL, NULL),
-('DON17664661494NS', '2025-12-23 05:02:29', 60000.00, 0.00, 0.00, 60000.00, 'COD', 'đã_giao', 'BanLe', 0, 'KH1765094524mbP', 'ONLINE', NULL, NULL),
-('ĐHR9BCLDJG', '2025-12-06 14:46:02', 75000.00, 7500.00, 0.00, 82500.00, 'Tiền mặt', 'đã_giao', NULL, 0, 'KH001', 'NV001', NULL, NULL);
+('ĐH00755297', '2026-04-13 15:49:24', 231.00, 23.10, 0.00, 254.10, 'Tiền mặt', 'chờ_xác_nhận', NULL, 0, 'KH8074AAC7', NULL, NULL, NULL),
+('ĐH0409D6B8', '2026-04-29 08:24:09', 45000.00, 4500.00, 0.00, 49500.00, 'MoMo', 'đã_giao', NULL, 0, 'KH8074AAC7', NULL, NULL, NULL),
+('ĐH326E3BD8', '2026-04-13 14:37:19', 15000.00, 1500.00, 0.00, 16500.00, 'Tiền mặt', 'đã_giao', NULL, 0, 'KH001', 'NVEB6F30', NULL, NULL),
+('ĐH5B3370D0', '2026-04-13 15:49:46', 15000.00, 1500.00, 0.00, 16500.00, 'Tiền mặt', 'đã_hủy', NULL, 0, 'KH8074AAC7', NULL, NULL, NULL),
+('ĐH5D7861CB', '2026-04-29 08:25:33', 60000.00, 6000.00, 0.00, 66000.00, 'Tiền mặt', 'đang_giao', NULL, 0, 'KH001', 'NV001', NULL, NULL),
+('ĐHAC2BA04B', '2026-04-13 15:49:36', 231.00, 23.10, 0.00, 254.10, 'Tiền mặt', 'chờ_xác_nhận', NULL, 0, 'KH8074AAC7', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -221,6 +342,7 @@ INSERT INTO `DON_BAN_HANG` (`MaDon`, `NgayDat`, `TongTienHang`, `TongThueVAT`, `
 -- Table structure for table `DON_DAT_HANG_NCC`
 --
 
+DROP TABLE IF EXISTS `DON_DAT_HANG_NCC`;
 CREATE TABLE `DON_DAT_HANG_NCC` (
   `MaDonDat` varchar(20) NOT NULL,
   `NgayDat` date NOT NULL,
@@ -238,13 +360,42 @@ CREATE TABLE `DON_DAT_HANG_NCC` (
 -- Table structure for table `DOT_KHUYEN_MAI`
 --
 
+DROP TABLE IF EXISTS `DOT_KHUYEN_MAI`;
 CREATE TABLE `DOT_KHUYEN_MAI` (
   `MaKM` varchar(20) NOT NULL,
   `TenCT` varchar(150) NOT NULL,
   `TuNgay` date NOT NULL,
   `DenNgay` date NOT NULL,
   `MoTa` text DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ;
+
+--
+-- Dumping data for table `DOT_KHUYEN_MAI`
+--
+
+INSERT INTO `DOT_KHUYEN_MAI` (`MaKM`, `TenCT`, `TuNgay`, `DenNgay`, `MoTa`) VALUES
+('KMD2B113', 'mua 2 thặng 1', '2026-04-12', '2026-04-15', 'mua 1 tganjw 2');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `DU_BAO_XU_HUONG`
+--
+
+DROP TABLE IF EXISTS `DU_BAO_XU_HUONG`;
+CREATE TABLE `DU_BAO_XU_HUONG` (
+  `MaDuBao` int(11) NOT NULL,
+  `MaSP` varchar(20) NOT NULL COMMENT 'FK → SAN_PHAM',
+  `KyDuBao` varchar(20) NOT NULL COMMENT 'VD: 2026-07, 2026-Q3',
+  `LoaiKyDuBao` varchar(10) NOT NULL DEFAULT 'thang' COMMENT 'thang | quy | tuan',
+  `SoLuongDuBao` int(11) NOT NULL DEFAULT 0 COMMENT 'Dự báo số lượng bán được',
+  `DoTinCay` decimal(5,2) DEFAULT NULL COMMENT 'Độ tin cậy dự báo (%)',
+  `XuHuong` varchar(20) DEFAULT NULL COMMENT 'tang_manh | tang | on_dinh | giam | giam_manh',
+  `LyDo` text DEFAULT NULL COMMENT 'AI giải thích lý do xu hướng',
+  `DeNghiNhapThem` int(11) DEFAULT 0 COMMENT 'Số lượng đề nghị nhập thêm dự trữ',
+  `NgayDuBao` datetime NOT NULL DEFAULT current_timestamp(),
+  `NguonDuLieu` varchar(100) DEFAULT NULL COMMENT 'Mô tả nguồn dữ liệu dùng để dự báo'
+) ;
 
 -- --------------------------------------------------------
 
@@ -252,6 +403,7 @@ CREATE TABLE `DOT_KHUYEN_MAI` (
 -- Table structure for table `KHACH_HANG`
 --
 
+DROP TABLE IF EXISTS `KHACH_HANG`;
 CREATE TABLE `KHACH_HANG` (
   `MaKH` varchar(20) NOT NULL,
   `TenKH` varchar(100) NOT NULL,
@@ -265,7 +417,7 @@ CREATE TABLE `KHACH_HANG` (
   `LoaiKH` varchar(50) DEFAULT NULL,
   `TongTieuDung` decimal(15,2) NOT NULL DEFAULT 0.00,
   `KhuyenMaiUuTien` tinyint(1) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ;
 
 --
 -- Dumping data for table `KHACH_HANG`
@@ -277,8 +429,31 @@ INSERT INTO `KHACH_HANG` (`MaKH`, `TenKH`, `SDT`, `DiaChi`, `Email`, `MatKhau`, 
 ('KH003', 'Phạm Hoàng C', '0909876543', '89 Hai Bà Trưng, Quận 3, TP.HCM', 'c.pham@example.com', '$2y$12$3xR7EXz1P1a0x48vNnY0Xun7rr8OQmjdw2ee.jprnLzjR5AtcXxja', NULL, NULL, 200, NULL, 0.00, 0),
 ('KH004', 'Lê Minh D', '0987654321', '101 Tô Hiến Thành, Quận 10, TP.HCM', 'd.le@example.com', '$2y$12$3xR7EXz1P1a0x48vNnY0Xun7rr8OQmjdw2ee.jprnLzjR5AtcXxja', NULL, NULL, 50, NULL, 0.00, 0),
 ('KH005', 'Võ Thanh E', '0978123456', '22 Phan Xích Long, Phú Nhuận, TP.HCM', 'e.vo@example.com', '$2y$12$3xR7EXz1P1a0x48vNnY0Xun7rr8OQmjdw2ee.jprnLzjR5AtcXxja', NULL, NULL, 10, NULL, 0.00, 0),
+('KH0B1B048A', 'aaaaaaaa', '12312313', '123123', 'a@gmail.com', NULL, NULL, NULL, 0, NULL, 0.00, 0),
 ('KH1765094524mbP', 'aada akwbdk', '0812781824', '123 kabwkdađa', 'a@gmail.com', '$2y$12$tz2QKLlsJQVeogx29DIA8uYgaHeaEFwbDtk/BcwVWLBFnFeeIEWyC', 'MRowotfwXunZwZTMd1WdOepW1ssuKnWwBXCjvwTbhkldKOmru87sZ6F2kUBU', NULL, 0, NULL, 0.00, 0),
-('KH1766416439fhp', 'b', '0812344144', '123 alo alo aloa lo', 'b@gmail.com', '$2y$12$eKZQLiaOA2v5u1ardI9Xnubb71nQrtx.orh8GXpJRRfW/ooTFJ8Tq', 'rA23a2Cw90VYK8Jv2p87WVu8ou97Jmlq2ZhrVn1A91dm35zaOQw733FvvSL0', NULL, 0, NULL, 0.00, 0);
+('KH1766416439fhp', 'b', '0812344144', '123 alo alo aloa lo', 'b@gmail.com', '$2y$12$eKZQLiaOA2v5u1ardI9Xnubb71nQrtx.orh8GXpJRRfW/ooTFJ8Tq', 'rA23a2Cw90VYK8Jv2p87WVu8ou97Jmlq2ZhrVn1A91dm35zaOQw733FvvSL0', NULL, 0, NULL, 0.00, 0),
+('KH3E660448', 'ad', '123123123123', '123', 'felixtran99999@gmail.com', NULL, NULL, NULL, 0, NULL, 0.00, 0),
+('KH56DDD791', 'aa', '123', '123', 'a@gmail.com', NULL, NULL, NULL, 0, NULL, 0.00, 0),
+('KH8074AAC7', 'thang đẹp trai', '082 2344234234', '123', 'a@gmail.com', NULL, NULL, NULL, 0, NULL, 0.00, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `LO_HANG`
+--
+
+DROP TABLE IF EXISTS `LO_HANG`;
+CREATE TABLE `LO_HANG` (
+  `MaLo` varchar(20) NOT NULL,
+  `MaSP` varchar(20) NOT NULL COMMENT 'FK → SAN_PHAM',
+  `MaNH` varchar(20) NOT NULL COMMENT 'FK → PHIEU_NHAP_HANG',
+  `SoLuongNhap` int(11) NOT NULL DEFAULT 0,
+  `SoLuongConLai` int(11) NOT NULL DEFAULT 0,
+  `NgayNhapKho` date NOT NULL,
+  `HanSuDung` date DEFAULT NULL COMMENT 'NULL = hàng không có HSD',
+  `ViTriKho` varchar(100) DEFAULT NULL,
+  `GhiChu` text DEFAULT NULL
+) ;
 
 -- --------------------------------------------------------
 
@@ -286,6 +461,7 @@ INSERT INTO `KHACH_HANG` (`MaKH`, `TenKH`, `SDT`, `DiaChi`, `Email`, `MatKhau`, 
 -- Table structure for table `migrations`
 --
 
+DROP TABLE IF EXISTS `migrations`;
 CREATE TABLE `migrations` (
   `id` int(10) UNSIGNED NOT NULL,
   `migration` varchar(255) NOT NULL,
@@ -316,6 +492,7 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 -- Table structure for table `NHAN_VIEN`
 --
 
+DROP TABLE IF EXISTS `NHAN_VIEN`;
 CREATE TABLE `NHAN_VIEN` (
   `MaNV` varchar(20) NOT NULL,
   `TenNV` varchar(100) NOT NULL,
@@ -335,7 +512,28 @@ CREATE TABLE `NHAN_VIEN` (
 INSERT INTO `NHAN_VIEN` (`MaNV`, `TenNV`, `SDT`, `DiaChi`, `TaiKhoan`, `MatKhau`, `role`, `MaTL`, `TrangThai`) VALUES
 ('NV001', 'Nhân Viên Test', '0901234567', '789 Đại lộ Võ Văn Kiệt, TP.HCM', 'nv001', '$2y$12$aKLcicnr/geIw1qkFbcUnuJxdWnulUC4P2qRi7Y2PyhGUctVf9ftO', 'Sale', 'TL001', 'active'),
 ('NVEB6F30', 'a', '012345678', '123', 'a', '$2b$12$VbfKbAns6V92noqPVu5VeucoizRpo0c3juN/lLsce5HkuKrbR9NKu', 'Sale', 'TL001', 'active'),
+('NVFFFF86', 'test', '123123123123', '123', 'aaa', '$2b$12$PnNSsrgftcapGBQiGLyWFeK2S/AH6CJz9LGfFpjdeDJW0QE8r7AIK', 'Sale', 'TL002', 'active'),
 ('NVYOBH0D', 'Thang', '1233345', '15 alo alo alo', 'nv02', '$2y$12$AeN9Eu9RSKxuhPrd2Xs4quLRI2y9bNZHElOPAjmcZSGvqUc2VDP5W', 'Sale', 'TL002', 'active');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `NHAT_KY_AI`
+--
+
+DROP TABLE IF EXISTS `NHAT_KY_AI`;
+CREATE TABLE `NHAT_KY_AI` (
+  `MaNhatKy` int(11) NOT NULL,
+  `ChucNang` varchar(50) NOT NULL COMMENT 'canh_bao_ton_kho | phan_loai_khach | du_bao_xu_huong',
+  `ThoiGianChay` datetime NOT NULL DEFAULT current_timestamp(),
+  `ThamSo` text DEFAULT NULL COMMENT 'JSON tham số đầu vào',
+  `KetQua_Tom_Tat` text DEFAULT NULL COMMENT 'Tóm tắt kết quả (JSON hoặc text)',
+  `SoLuongXuLy` int(11) DEFAULT 0 COMMENT 'Số bản ghi được xử lý',
+  `SoLuongCanhBao` int(11) DEFAULT 0 COMMENT 'Số cảnh báo/đề xuất tạo ra',
+  `TrangThai` varchar(20) NOT NULL DEFAULT 'thanh_cong' COMMENT 'thanh_cong | loi | dang_chay',
+  `ThongBaoLoi` text DEFAULT NULL,
+  `ThoiGianChay_ms` int(11) DEFAULT NULL COMMENT 'Thời gian thực thi (milliseconds)'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Audit log mỗi lần module AI chạy phân tích';
 
 -- --------------------------------------------------------
 
@@ -343,6 +541,7 @@ INSERT INTO `NHAN_VIEN` (`MaNV`, `TenNV`, `SDT`, `DiaChi`, `TaiKhoan`, `MatKhau`
 -- Table structure for table `NHA_CUNG_CAP`
 --
 
+DROP TABLE IF EXISTS `NHA_CUNG_CAP`;
 CREATE TABLE `NHA_CUNG_CAP` (
   `MaNCC` varchar(20) NOT NULL,
   `TenNCC` varchar(100) NOT NULL,
@@ -369,9 +568,34 @@ INSERT INTO `NHA_CUNG_CAP` (`MaNCC`, `TenNCC`, `MaSoThue`, `DiaChi`, `SDT`, `Ema
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `PHAN_LOAI_KHACH_HANG`
+--
+
+DROP TABLE IF EXISTS `PHAN_LOAI_KHACH_HANG`;
+CREATE TABLE `PHAN_LOAI_KHACH_HANG` (
+  `MaPhanLoai` int(11) NOT NULL,
+  `MaKH` varchar(20) NOT NULL COMMENT 'FK → KHACH_HANG',
+  `KyPhanTich` varchar(20) NOT NULL COMMENT 'VD: 2026-Q2, 2026-05',
+  `HangKH` varchar(30) NOT NULL COMMENT 'Dong | Bac | Vang | KimCuong',
+  `DiemRFM` decimal(5,2) DEFAULT NULL COMMENT 'Điểm tổng hợp RFM (0-100)',
+  `DiemRecency` decimal(5,2) DEFAULT NULL COMMENT 'Điểm tần suất mua gần đây',
+  `DiemFrequency` decimal(5,2) DEFAULT NULL COMMENT 'Điểm số lần mua',
+  `DiemMonetary` decimal(5,2) DEFAULT NULL COMMENT 'Điểm giá trị chi tiêu',
+  `TongChiTieu` decimal(15,2) DEFAULT 0.00,
+  `SoLanMua` int(11) DEFAULT 0,
+  `NgayMuaGanNhat` date DEFAULT NULL,
+  `GiaTri_LTV` decimal(15,2) DEFAULT NULL COMMENT 'Dự báo giá trị vòng đời khách hàng',
+  `DeNghiUuDai` text DEFAULT NULL COMMENT 'Gợi ý ưu đãi từ AI',
+  `NgayPhanLoai` datetime NOT NULL DEFAULT current_timestamp()
+) ;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `PHIEU_DE_NGHI_NHAP`
 --
 
+DROP TABLE IF EXISTS `PHIEU_DE_NGHI_NHAP`;
 CREATE TABLE `PHIEU_DE_NGHI_NHAP` (
   `MaPhieuDeNghi` varchar(20) NOT NULL,
   `NgayLap` date NOT NULL,
@@ -386,6 +610,7 @@ CREATE TABLE `PHIEU_DE_NGHI_NHAP` (
 -- Table structure for table `PHIEU_GIAO_HANG`
 --
 
+DROP TABLE IF EXISTS `PHIEU_GIAO_HANG`;
 CREATE TABLE `PHIEU_GIAO_HANG` (
   `MaPhieuGiao` varchar(20) NOT NULL,
   `NgayGiao` date DEFAULT NULL,
@@ -405,11 +630,32 @@ CREATE TABLE `PHIEU_GIAO_HANG` (
 --
 
 INSERT INTO `PHIEU_GIAO_HANG` (`MaPhieuGiao`, `NgayGiao`, `MaVanDon`, `TenNguoiNhan`, `SDTNguoiNhan`, `DiaChiGiao`, `TenShipper`, `TrangThaiGiao`, `GhiChu`, `MaDon`, `NguoiGiao`) VALUES
-('PG335ELHS0', '2025-12-23', 'qwqrq', 'aada akwbdk', '0812781824', '123 kabwkdađa', NULL, 'đang_giao', NULL, 'DON17664661494NS', NULL),
-('PGATYOSQAQ', '2025-12-06', '111', 'Nguyễn Văn A', '0912345678', '12 Lê Lợi, Quận 1, TP.HCM', 'Sang', 'giao_thất_bại', NULL, 'ĐHR9BCLDJG', 'NVYOBH0D'),
-('PGSDW0BADK', '2025-12-07', 'alo', 'a', 'a', 'alo', 'alo', 'giao_thất_bại', NULL, 'DON1765095734izOr', 'NV001'),
-('PGVVGFPHSR', '2025-12-16', NULL, 'a', 'a', '15 ngo gia kham', NULL, 'đã_giao', NULL, 'DON1765864704SD5', NULL),
-('PGXQVHR9DE', '2025-12-22', NULL, 'b', '0812344144', '123 alo alo aloa lo', NULL, 'đã_giao', NULL, 'DON1766417122DTC', NULL);
+('PG3B61EBD1', NULL, NULL, 'thang đẹp trai', '2344234234', '123', NULL, 'giao_thất_bại', NULL, 'ĐH5B3370D0', NULL),
+('PG418FA034', NULL, NULL, 'Nguyễn Văn A', '0912345678', '12 Lê Lợi, Quận 1, TP.HCM', NULL, 'đang_giao', NULL, 'ĐH5D7861CB', NULL),
+('PGFBC74905', NULL, NULL, 'thang đẹp trai', '2344234234', '14', NULL, 'đã_giao', NULL, 'ĐH0409D6B8', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `PHIEU_NHAP_HANG`
+--
+
+DROP TABLE IF EXISTS `PHIEU_NHAP_HANG`;
+CREATE TABLE `PHIEU_NHAP_HANG` (
+  `MaNH` varchar(20) NOT NULL,
+  `MaNCC` varchar(20) NOT NULL,
+  `MaNV` varchar(20) NOT NULL,
+  `NgayNhap` datetime DEFAULT current_timestamp(),
+  `TongTien` decimal(15,2) DEFAULT 0.00,
+  `GhiChu` text DEFAULT NULL
+) ;
+
+--
+-- Dumping data for table `PHIEU_NHAP_HANG`
+--
+
+INSERT INTO `PHIEU_NHAP_HANG` (`MaNH`, `MaNCC`, `MaNV`, `NgayNhap`, `TongTien`, `GhiChu`) VALUES
+('NH4FA746', 'NCC005', 'NVFFFF86', '2026-04-27 20:19:11', 400000.00, NULL);
 
 -- --------------------------------------------------------
 
@@ -417,6 +663,7 @@ INSERT INTO `PHIEU_GIAO_HANG` (`MaPhieuGiao`, `NgayGiao`, `MaVanDon`, `TenNguoiN
 -- Table structure for table `SAN_PHAM`
 --
 
+DROP TABLE IF EXISTS `SAN_PHAM`;
 CREATE TABLE `SAN_PHAM` (
   `MaSP` varchar(20) NOT NULL,
   `TenSP` varchar(150) NOT NULL,
@@ -428,16 +675,38 @@ CREATE TABLE `SAN_PHAM` (
   `HinhAnh` varchar(255) DEFAULT NULL,
   `MaDanhMuc` varchar(20) NOT NULL,
   `MaNCC` varchar(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ;
 
 --
 -- Dumping data for table `SAN_PHAM`
 --
 
 INSERT INTO `SAN_PHAM` (`MaSP`, `TenSP`, `QuyCach`, `DonViTinh`, `GiaVon`, `GiaBan`, `TonKho`, `HinhAnh`, `MaDanhMuc`, `MaNCC`) VALUES
-('SPDEPVHY', 'Nước giải khát ngon lành', 'nan', 'Lon', 7000.00, 15000.00, 501, 'products/SPDEPVHY_1765097021.webp', 'DM001', 'NCC001'),
-('SPENTW3F', 'cocacola', '1', 'lon', 8000.00, 15000.00, 93, 'products/SPENTW3F_1765096987.webp', 'DM001', 'NCC002'),
-('SPRFP0VZ', 'test', '1', 'lon', 8000.00, 15000.00, 93, 'products/SPRFP0VZ_1765096977.webp', 'DM001', 'NCC001');
+('SP3774B6', 'alo', '500', 'lon', 8000.00, 15000.00, 4, NULL, 'DM001', 'NCC63BAF1'),
+('SPDEPVHY', 'Nước giải khát ngon lành', 'nan', 'Lon', 7000.00, 15000.00, 509, 'products/SPDEPVHY_1765097021.webp', 'DM001', 'NCC001'),
+('SPENTW3F', 'cocacola', '1', 'lon', 8000.00, 15000.00, 100, 'products/SPENTW3F_1765096987.webp', 'DM001', 'NCC002'),
+('SPF783DA', '123', '123', '123', 123.00, 231.00, 121, 'products/1776065185243-947646962.jpg', 'DM001', 'NCC004'),
+('SPRFP0VZ', 'test123', '1ad', 'bia', 8000.00, 15000.00, 251, 'products/SPRFP0VZ_1765096977.webp', 'DM001', 'NCC001');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `THONG_KE_BAN_HANG`
+--
+
+DROP TABLE IF EXISTS `THONG_KE_BAN_HANG`;
+CREATE TABLE `THONG_KE_BAN_HANG` (
+  `MaThongKe` int(11) NOT NULL,
+  `MaSP` varchar(20) NOT NULL COMMENT 'FK → SAN_PHAM',
+  `MaDanhMuc` varchar(20) DEFAULT NULL COMMENT 'FK → DANH_MUC_SP',
+  `KyThongKe` varchar(20) NOT NULL COMMENT 'VD: 2026-05, 2026-W22',
+  `LoaiKy` varchar(10) NOT NULL DEFAULT 'thang' COMMENT 'thang | tuan | quy',
+  `SoLuongBan` int(11) NOT NULL DEFAULT 0,
+  `DoanhThu` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `SoLuongTra` int(11) NOT NULL DEFAULT 0 COMMENT 'Số lượng bị trả lại (nếu có)',
+  `SoDonHang` int(11) NOT NULL DEFAULT 0 COMMENT 'Số đơn hàng có sản phẩm này',
+  `NgayCapNhat` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ;
 
 -- --------------------------------------------------------
 
@@ -445,6 +714,7 @@ INSERT INTO `SAN_PHAM` (`MaSP`, `TenSP`, `QuyCach`, `DonViTinh`, `GiaVon`, `GiaB
 -- Table structure for table `TRO_LY_CUA_HANG`
 --
 
+DROP TABLE IF EXISTS `TRO_LY_CUA_HANG`;
 CREATE TABLE `TRO_LY_CUA_HANG` (
   `MaTL` varchar(20) NOT NULL,
   `TenTL` varchar(100) NOT NULL,
@@ -477,6 +747,23 @@ ALTER TABLE `BANG_LUONG`
   ADD KEY `FK_BangLuong_NV` (`MaNV`);
 
 --
+-- Indexes for table `CANH_BAO_TON_KHO`
+--
+ALTER TABLE `CANH_BAO_TON_KHO`
+  ADD PRIMARY KEY (`MaCanhBao`),
+  ADD KEY `FK_CanhBao_SanPham` (`MaSP`),
+  ADD KEY `FK_CanhBao_LoHang` (`MaLo`),
+  ADD KEY `IDX_CanhBao_TrangThai` (`TrangThai`),
+  ADD KEY `IDX_CanhBao_Loai` (`LoaiCanhBao`);
+
+--
+-- Indexes for table `CAU_HINH_CANH_BAO`
+--
+ALTER TABLE `CAU_HINH_CANH_BAO`
+  ADD PRIMARY KEY (`MaCauHinh`),
+  ADD KEY `FK_CauHinh_DanhMuc` (`MaDanhMuc`);
+
+--
 -- Indexes for table `CHAM_CONG`
 --
 ALTER TABLE `CHAM_CONG`
@@ -484,6 +771,15 @@ ALTER TABLE `CHAM_CONG`
   ADD KEY `FK_ChamCong_CHT` (`MaCHT`),
   ADD KEY `FK_ChamCong_TL` (`MaTL`),
   ADD KEY `FK_ChamCong_NV` (`MaNV`);
+
+--
+-- Indexes for table `CHAM_SOC_KHACH_HANG`
+--
+ALTER TABLE `CHAM_SOC_KHACH_HANG`
+  ADD PRIMARY KEY (`MaCSKH`),
+  ADD KEY `FK_CSKH_KhachHang` (`MaKH`),
+  ADD KEY `FK_CSKH_NhanVien` (`NguoiThucHien`),
+  ADD KEY `FK_CSKH_DonBan` (`MaDon_LienQuan`);
 
 --
 -- Indexes for table `CT_DE_NGHI_NHAP`
@@ -507,6 +803,14 @@ ALTER TABLE `CT_KHUYEN_MAI`
   ADD KEY `FK_CTKM_SanPham` (`MaSP`);
 
 --
+-- Indexes for table `CT_NHAP_HANG`
+--
+ALTER TABLE `CT_NHAP_HANG`
+  ADD PRIMARY KEY (`MaCTNH`),
+  ADD KEY `MaNH` (`MaNH`),
+  ADD KEY `MaSP` (`MaSP`);
+
+--
 -- Indexes for table `CUA_HANG_TRUONG`
 --
 ALTER TABLE `CUA_HANG_TRUONG`
@@ -518,6 +822,15 @@ ALTER TABLE `CUA_HANG_TRUONG`
 --
 ALTER TABLE `DANH_MUC_SP`
   ADD PRIMARY KEY (`MaDanhMuc`);
+
+--
+-- Indexes for table `DE_NGHI_DAT_HANG_DU_BAO`
+--
+ALTER TABLE `DE_NGHI_DAT_HANG_DU_BAO`
+  ADD PRIMARY KEY (`MaDeNghi`),
+  ADD KEY `FK_DNDHDB_SanPham` (`MaSP`),
+  ADD KEY `FK_DNDHDB_DuBao` (`MaDuBao`),
+  ADD KEY `FK_DNDHDB_PhieuDN` (`MaPhieuDeNghi_TaoRa`);
 
 --
 -- Indexes for table `DON_BAN_HANG`
@@ -544,11 +857,27 @@ ALTER TABLE `DOT_KHUYEN_MAI`
   ADD PRIMARY KEY (`MaKM`);
 
 --
+-- Indexes for table `DU_BAO_XU_HUONG`
+--
+ALTER TABLE `DU_BAO_XU_HUONG`
+  ADD PRIMARY KEY (`MaDuBao`),
+  ADD UNIQUE KEY `UNQ_DuBao_SP_Ky` (`MaSP`,`KyDuBao`),
+  ADD KEY `IDX_DuBao_XuHuong` (`XuHuong`);
+
+--
 -- Indexes for table `KHACH_HANG`
 --
 ALTER TABLE `KHACH_HANG`
   ADD PRIMARY KEY (`MaKH`),
   ADD UNIQUE KEY `khach_hang_apitoken_unique` (`ApiToken`);
+
+--
+-- Indexes for table `LO_HANG`
+--
+ALTER TABLE `LO_HANG`
+  ADD PRIMARY KEY (`MaLo`),
+  ADD KEY `FK_LoHang_SanPham` (`MaSP`),
+  ADD KEY `FK_LoHang_PhieuNhap` (`MaNH`);
 
 --
 -- Indexes for table `migrations`
@@ -565,10 +894,26 @@ ALTER TABLE `NHAN_VIEN`
   ADD KEY `FK_NhanVien_TroLy` (`MaTL`);
 
 --
+-- Indexes for table `NHAT_KY_AI`
+--
+ALTER TABLE `NHAT_KY_AI`
+  ADD PRIMARY KEY (`MaNhatKy`),
+  ADD KEY `IDX_NhatKyAI_ChucNang` (`ChucNang`),
+  ADD KEY `IDX_NhatKyAI_ThoiGian` (`ThoiGianChay`);
+
+--
 -- Indexes for table `NHA_CUNG_CAP`
 --
 ALTER TABLE `NHA_CUNG_CAP`
   ADD PRIMARY KEY (`MaNCC`);
+
+--
+-- Indexes for table `PHAN_LOAI_KHACH_HANG`
+--
+ALTER TABLE `PHAN_LOAI_KHACH_HANG`
+  ADD PRIMARY KEY (`MaPhanLoai`),
+  ADD UNIQUE KEY `UNQ_KH_Ky` (`MaKH`,`KyPhanTich`),
+  ADD KEY `IDX_PLKH_Hang` (`HangKH`);
 
 --
 -- Indexes for table `PHIEU_DE_NGHI_NHAP`
@@ -586,12 +931,28 @@ ALTER TABLE `PHIEU_GIAO_HANG`
   ADD KEY `FK_PhieuGiao_NhanVien` (`NguoiGiao`);
 
 --
+-- Indexes for table `PHIEU_NHAP_HANG`
+--
+ALTER TABLE `PHIEU_NHAP_HANG`
+  ADD PRIMARY KEY (`MaNH`),
+  ADD KEY `MaNCC` (`MaNCC`),
+  ADD KEY `MaNV` (`MaNV`);
+
+--
 -- Indexes for table `SAN_PHAM`
 --
 ALTER TABLE `SAN_PHAM`
   ADD PRIMARY KEY (`MaSP`),
   ADD KEY `FK_SanPham_DanhMuc` (`MaDanhMuc`),
   ADD KEY `FK_SanPham_NCC` (`MaNCC`);
+
+--
+-- Indexes for table `THONG_KE_BAN_HANG`
+--
+ALTER TABLE `THONG_KE_BAN_HANG`
+  ADD PRIMARY KEY (`MaThongKe`),
+  ADD UNIQUE KEY `UNQ_ThongKe_SP_Ky` (`MaSP`,`KyThongKe`),
+  ADD KEY `FK_ThongKe_DanhMuc` (`MaDanhMuc`);
 
 --
 -- Indexes for table `TRO_LY_CUA_HANG`
@@ -606,16 +967,64 @@ ALTER TABLE `TRO_LY_CUA_HANG`
 --
 
 --
+-- AUTO_INCREMENT for table `CANH_BAO_TON_KHO`
+--
+ALTER TABLE `CANH_BAO_TON_KHO`
+  MODIFY `MaCanhBao` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `CAU_HINH_CANH_BAO`
+--
+ALTER TABLE `CAU_HINH_CANH_BAO`
+  MODIFY `MaCauHinh` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `CHAM_CONG`
 --
 ALTER TABLE `CHAM_CONG`
-  MODIFY `MaChamCong` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `MaChamCong` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `CHAM_SOC_KHACH_HANG`
+--
+ALTER TABLE `CHAM_SOC_KHACH_HANG`
+  MODIFY `MaCSKH` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `DE_NGHI_DAT_HANG_DU_BAO`
+--
+ALTER TABLE `DE_NGHI_DAT_HANG_DU_BAO`
+  MODIFY `MaDeNghi` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `DU_BAO_XU_HUONG`
+--
+ALTER TABLE `DU_BAO_XU_HUONG`
+  MODIFY `MaDuBao` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
+-- AUTO_INCREMENT for table `NHAT_KY_AI`
+--
+ALTER TABLE `NHAT_KY_AI`
+  MODIFY `MaNhatKy` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `PHAN_LOAI_KHACH_HANG`
+--
+ALTER TABLE `PHAN_LOAI_KHACH_HANG`
+  MODIFY `MaPhanLoai` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `THONG_KE_BAN_HANG`
+--
+ALTER TABLE `THONG_KE_BAN_HANG`
+  MODIFY `MaThongKe` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
@@ -630,12 +1039,33 @@ ALTER TABLE `BANG_LUONG`
   ADD CONSTRAINT `FK_BangLuong_TL` FOREIGN KEY (`MaTL`) REFERENCES `TRO_LY_CUA_HANG` (`MaTL`) ON UPDATE CASCADE;
 
 --
+-- Constraints for table `CANH_BAO_TON_KHO`
+--
+ALTER TABLE `CANH_BAO_TON_KHO`
+  ADD CONSTRAINT `FK_CanhBao_LoHang` FOREIGN KEY (`MaLo`) REFERENCES `LO_HANG` (`MaLo`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `FK_CanhBao_SanPham` FOREIGN KEY (`MaSP`) REFERENCES `SAN_PHAM` (`MaSP`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `CAU_HINH_CANH_BAO`
+--
+ALTER TABLE `CAU_HINH_CANH_BAO`
+  ADD CONSTRAINT `FK_CauHinh_DanhMuc` FOREIGN KEY (`MaDanhMuc`) REFERENCES `DANH_MUC_SP` (`MaDanhMuc`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
 -- Constraints for table `CHAM_CONG`
 --
 ALTER TABLE `CHAM_CONG`
   ADD CONSTRAINT `FK_ChamCong_CHT` FOREIGN KEY (`MaCHT`) REFERENCES `CUA_HANG_TRUONG` (`MaCHT`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `FK_ChamCong_NV` FOREIGN KEY (`MaNV`) REFERENCES `NHAN_VIEN` (`MaNV`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `FK_ChamCong_TL` FOREIGN KEY (`MaTL`) REFERENCES `TRO_LY_CUA_HANG` (`MaTL`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `CHAM_SOC_KHACH_HANG`
+--
+ALTER TABLE `CHAM_SOC_KHACH_HANG`
+  ADD CONSTRAINT `FK_CSKH_DonBan` FOREIGN KEY (`MaDon_LienQuan`) REFERENCES `DON_BAN_HANG` (`MaDon`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `FK_CSKH_KhachHang` FOREIGN KEY (`MaKH`) REFERENCES `KHACH_HANG` (`MaKH`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `FK_CSKH_NhanVien` FOREIGN KEY (`NguoiThucHien`) REFERENCES `NHAN_VIEN` (`MaNV`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Constraints for table `CT_DE_NGHI_NHAP`
@@ -659,6 +1089,21 @@ ALTER TABLE `CT_KHUYEN_MAI`
   ADD CONSTRAINT `FK_CTKM_SanPham` FOREIGN KEY (`MaSP`) REFERENCES `SAN_PHAM` (`MaSP`) ON UPDATE CASCADE;
 
 --
+-- Constraints for table `CT_NHAP_HANG`
+--
+ALTER TABLE `CT_NHAP_HANG`
+  ADD CONSTRAINT `ct_nhap_hang_ibfk_1` FOREIGN KEY (`MaNH`) REFERENCES `PHIEU_NHAP_HANG` (`MaNH`) ON DELETE CASCADE,
+  ADD CONSTRAINT `ct_nhap_hang_ibfk_2` FOREIGN KEY (`MaSP`) REFERENCES `SAN_PHAM` (`MaSP`);
+
+--
+-- Constraints for table `DE_NGHI_DAT_HANG_DU_BAO`
+--
+ALTER TABLE `DE_NGHI_DAT_HANG_DU_BAO`
+  ADD CONSTRAINT `FK_DNDHDB_DuBao` FOREIGN KEY (`MaDuBao`) REFERENCES `DU_BAO_XU_HUONG` (`MaDuBao`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `FK_DNDHDB_PhieuDN` FOREIGN KEY (`MaPhieuDeNghi_TaoRa`) REFERENCES `PHIEU_DE_NGHI_NHAP` (`MaPhieuDeNghi`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `FK_DNDHDB_SanPham` FOREIGN KEY (`MaSP`) REFERENCES `SAN_PHAM` (`MaSP`) ON UPDATE CASCADE;
+
+--
 -- Constraints for table `DON_BAN_HANG`
 --
 ALTER TABLE `DON_BAN_HANG`
@@ -674,10 +1119,29 @@ ALTER TABLE `DON_DAT_HANG_NCC`
   ADD CONSTRAINT `FK_DonDat_SanPham` FOREIGN KEY (`MaSP_DatMua`) REFERENCES `SAN_PHAM` (`MaSP`) ON UPDATE CASCADE;
 
 --
+-- Constraints for table `DU_BAO_XU_HUONG`
+--
+ALTER TABLE `DU_BAO_XU_HUONG`
+  ADD CONSTRAINT `FK_DuBao_SanPham` FOREIGN KEY (`MaSP`) REFERENCES `SAN_PHAM` (`MaSP`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `LO_HANG`
+--
+ALTER TABLE `LO_HANG`
+  ADD CONSTRAINT `FK_LoHang_PhieuNhap` FOREIGN KEY (`MaNH`) REFERENCES `PHIEU_NHAP_HANG` (`MaNH`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `FK_LoHang_SanPham` FOREIGN KEY (`MaSP`) REFERENCES `SAN_PHAM` (`MaSP`) ON UPDATE CASCADE;
+
+--
 -- Constraints for table `NHAN_VIEN`
 --
 ALTER TABLE `NHAN_VIEN`
   ADD CONSTRAINT `FK_NhanVien_TroLy` FOREIGN KEY (`MaTL`) REFERENCES `TRO_LY_CUA_HANG` (`MaTL`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `PHAN_LOAI_KHACH_HANG`
+--
+ALTER TABLE `PHAN_LOAI_KHACH_HANG`
+  ADD CONSTRAINT `FK_PhanLoai_KhachHang` FOREIGN KEY (`MaKH`) REFERENCES `KHACH_HANG` (`MaKH`) ON UPDATE CASCADE;
 
 --
 -- Constraints for table `PHIEU_DE_NGHI_NHAP`
@@ -693,11 +1157,25 @@ ALTER TABLE `PHIEU_GIAO_HANG`
   ADD CONSTRAINT `FK_PhieuGiao_NhanVien` FOREIGN KEY (`NguoiGiao`) REFERENCES `NHAN_VIEN` (`MaNV`) ON UPDATE CASCADE;
 
 --
+-- Constraints for table `PHIEU_NHAP_HANG`
+--
+ALTER TABLE `PHIEU_NHAP_HANG`
+  ADD CONSTRAINT `phieu_nhap_hang_ibfk_1` FOREIGN KEY (`MaNCC`) REFERENCES `NHA_CUNG_CAP` (`MaNCC`),
+  ADD CONSTRAINT `phieu_nhap_hang_ibfk_2` FOREIGN KEY (`MaNV`) REFERENCES `NHAN_VIEN` (`MaNV`);
+
+--
 -- Constraints for table `SAN_PHAM`
 --
 ALTER TABLE `SAN_PHAM`
   ADD CONSTRAINT `FK_SanPham_DanhMuc` FOREIGN KEY (`MaDanhMuc`) REFERENCES `DANH_MUC_SP` (`MaDanhMuc`) ON UPDATE CASCADE,
   ADD CONSTRAINT `FK_SanPham_NCC` FOREIGN KEY (`MaNCC`) REFERENCES `NHA_CUNG_CAP` (`MaNCC`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `THONG_KE_BAN_HANG`
+--
+ALTER TABLE `THONG_KE_BAN_HANG`
+  ADD CONSTRAINT `FK_ThongKe_DanhMuc` FOREIGN KEY (`MaDanhMuc`) REFERENCES `DANH_MUC_SP` (`MaDanhMuc`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `FK_ThongKe_SanPham` FOREIGN KEY (`MaSP`) REFERENCES `SAN_PHAM` (`MaSP`) ON UPDATE CASCADE;
 
 --
 -- Constraints for table `TRO_LY_CUA_HANG`
