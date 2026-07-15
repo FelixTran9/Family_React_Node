@@ -4,7 +4,7 @@ import { useCart } from '../context/CartContext';
 import { ShoppingCart, Check, ArrowLeft, Star, Heart } from 'lucide-react';
 import API from '../services/api';
 
-const BACKEND = 'http://localhost:5002';
+const BACKEND = 'https://familyreactnode-production.up.railway.app';
 
 const ProductDetail = () => {
   const { id } = useParams();

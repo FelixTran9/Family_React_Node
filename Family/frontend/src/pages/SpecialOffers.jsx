@@ -3,7 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import ProductCard from '../components/UI/ProductCard';
 import API from '../services/api';
 
-const BACKEND = 'http://localhost:5002';
+const BACKEND = 'https://familyreactnode-production.up.railway.app';
 
 const SpecialOffers = () => {
   const [searchParams] = useSearchParams();

@@ -4,7 +4,7 @@ import ProductCard from '../components/UI/ProductCard';
 import { useEffect, useState } from 'react';
 import API from '../services/api';
 
-const BACKEND = 'http://localhost:5002';
+const BACKEND = 'https://familyreactnode-production.up.railway.app';
 
 const Home = () => {
   const [products, setProducts] = useState([]);
