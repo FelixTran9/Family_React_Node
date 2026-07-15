@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = "http://localhost:5002/api/admin";
+const API_BASE = "https://familyreactnode-production.up.railway.app/api/admin";
 
 const adminApi = axios.create({
   baseURL: API_BASE,
