@@ -63,15 +63,9 @@ const ShippingEdit = () => {
               className="admin-form-input admin-select"
               value={form.TrangThaiGiao}
               onChange={handleChange}
-              disabled={form.TrangThaiGiao !== "đang_giao"}
             >
               {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
-            {form.TrangThaiGiao !== "đang_giao" && (
-              <p style={{ fontSize: "0.85rem", color: "var(--admin-warning)", marginTop: 8 }}>
-                ⚠️ Phiếu giao này đã kết thúc, không thể đổi lại trạng thái.
-              </p>
-            )}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
             <div className="form-group">

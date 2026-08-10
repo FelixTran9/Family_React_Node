@@ -1,0 +1,14 @@
+role admin:
+	user: truong001
+	Password: 123456789
+	
+	https://family-react-node-hjzx.vercel.app/admin
+
+
+
+
+Cus:
+	user: a@gmail.com
+	password: 123456
+
+	https://family-react-node-hjzx.vercel.app/
