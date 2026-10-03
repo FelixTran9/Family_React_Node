@@ -12,9 +12,6 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  ssl: {
-    rejectUnauthorized: false // Bắt buộc thêm dòng này cho Aiven
-  }
 });
 
 export default pool;
