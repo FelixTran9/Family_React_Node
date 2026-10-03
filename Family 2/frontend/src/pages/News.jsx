@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import API from '../services/api';
+import { API_URL } from "../config";
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002';
+const BASE_URL = API_URL;
 
 const KM_TYPE_LABEL = {
   chiet_khau: '🏷️ Giảm giá',

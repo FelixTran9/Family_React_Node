@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import ProductCard from '../components/UI/ProductCard';
 import API from '../services/api';
+import { API_URL } from "../config";
 
-const BACKEND = 'http://localhost:5002';
+const BACKEND = API_URL;
 
 const SpecialOffers = () => {
   const [searchParams] = useSearchParams();

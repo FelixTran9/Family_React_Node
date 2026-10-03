@@ -3,8 +3,9 @@ import CategoryCard from '../components/UI/CategoryCard';
 import ProductCard from '../components/UI/ProductCard';
 import { useEffect, useState } from 'react';
 import API from '../services/api';
+import { API_URL } from "../config";
 
-const BACKEND = 'http://localhost:5002';
+const BACKEND = API_URL;
 
 const Home = () => {
   const [products, setProducts] = useState([]);

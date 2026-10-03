@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import adminApi from "../../../services/adminApi";
 import "../../../components/admin/admin.css";
+import { API_URL } from "../../../config";
 
-const BACKEND = "http://localhost:5002";
+const BACKEND = API_URL;
 
 const ProductEdit = () => {
   const { id } = useParams();

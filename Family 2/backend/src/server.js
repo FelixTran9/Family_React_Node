@@ -40,7 +40,27 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 5002;
 
-app.use(cors());
+// --- CORS: chỉ cho phép Frontend (Vercel + localhost khi dev) gọi API ---
+// Có thể ghi đè bằng biến môi trường CORS_ORIGIN (nhiều link cách nhau bằng dấu phẩy, KHÔNG có dấu "/" ở cuối)
+const allowedOrigins = (
+  process.env.CORS_ORIGIN ||
+  "https://family-react-node.vercel.app,http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000"
+)
+  .split(",")
+  .map((o) => o.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Cho phép request không có Origin (Postman, curl, server-to-server, health check của Render)
+      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(null, false);
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.post("/test-upload", (req, res) => res.send("TEST UPLOAD IS WORKING " + Date.now()));

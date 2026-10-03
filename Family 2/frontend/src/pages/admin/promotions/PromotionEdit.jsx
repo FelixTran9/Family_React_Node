@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import adminApi from "../../../services/adminApi";
 import "../../../components/admin/admin.css";
+import { API_URL } from "../../../config";
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5002";
+const BASE_URL = API_URL;
 
 const PromotionEdit = () => {
   const { id } = useParams();

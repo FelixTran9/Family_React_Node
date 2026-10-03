@@ -3,8 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import useAdminList from "../../../hooks/useAdminList";
 import adminApi from "../../../services/adminApi";
 import "../../../components/admin/admin.css";
+import { API_URL } from "../../../config";
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5002";
+const BASE_URL = API_URL;
 
 const KM_TYPE = { chiet_khau: ["badge-info", "🏷️ Giảm giá"], mua_tang: ["badge-primary", "🎁 Mua tặng"] };
 

@@ -3,8 +3,9 @@ import { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { ShoppingCart, Check, ArrowLeft, Star, Heart } from 'lucide-react';
 import API from '../services/api';
+import { API_URL } from "../config";
 
-const BACKEND = 'http://localhost:5002';
+const BACKEND = API_URL;
 
 const ProductDetail = () => {
   const { id } = useParams();
