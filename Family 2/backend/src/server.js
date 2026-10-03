@@ -32,7 +32,7 @@ import nhatKyAiRoutes from "./routes/nhatKyAiRoutes.js";
 // Upload & Customer Order
 import { upload, uploadPromotion, uploadProductImage, uploadPromotionImage } from "./controllers/uploadController.js";
 import authAdmin from "./middleware/authAdmin.js";
-import { getCategories, customerPlaceOrder, getCustomerByPhone, updateCustomerByEmail, customerLogin, getCustomerOrdersByEmail } from "./controllers/customerOrderController.js";
+import { getCategories, customerPlaceOrder, getCustomerByPhone, updateCustomerByEmail, customerLogin, getCustomerOrdersByEmail, cancelCustomerOrder } from "./controllers/customerOrderController.js";
 
 dotenv.config();
 
@@ -60,6 +60,7 @@ app.post("/api/customers/login", customerLogin);      // Đăng nhập khách h�
 app.get("/api/customers/lookup/:sdt", getCustomerByPhone); // Tự động lấy thông tin khách hàng
 app.put("/api/customers/:email", updateCustomerByEmail); // Cập nhật thông tin khách hàng
 app.get("/api/customers/:email/orders", getCustomerOrdersByEmail); // Lấy lịch sử đơn hàng
+app.put("/api/orders/:id/cancel", cancelCustomerOrder); // Khách hàng hủy đơn hàng
 app.get("/api/promotions", getPublicPromotions);     // Khuyến mãi đang hoạt động (public)
 app.get("/api/customers/:sdt/vip", getKhachHangVip); // Kiểm tra hạng VIP theo SĐT
 

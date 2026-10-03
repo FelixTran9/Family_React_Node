@@ -87,7 +87,7 @@ const Home = () => {
               { MaDanhMuc: '6', TenDanhMuc: 'Đồ uống' },
             ]).map((cat, index) => {
               const bgImages = [
-                "https://p16-lemon8-sign-sg.tiktokcdn.com/tos-alisg-v-a3e477-sg/oIIkvAn1IBCDAFdVb9EgQ8AeMi8PAGN9pfttQX~tplv-sdweummd6v-text-logo-v1:QGthcmxhLmZvb2RibG9n:q75.jpeg?lk3s=c7f08e79&source=lemon8_seo&x-expires=1778673600&x-signature=6xweZB0xoNlDLZO%2FobAwy6Ts%2BDQ%3D",
+                "https://www.kidsplaza.vn/blog/wp-content/uploads/2017/05/cho-con-an-1-goi-bim-bim-me-se-phai-tra-gia-bang-dieu-gi-snacks_embedded-1487213431-width500height347.jpg",
                 "https://marketingai.mediacdn.vn/wp-content/uploads/2020/03/kantar_worldpanel_beautyCN_4.jpg",
                 "https://images.unsplash.com/photo-1576402187878-974f70c890a5?w=800&fit=crop",
                 "https://cellphones.com.vn/sforum/wp-content/uploads/2023/07/review-do-gia-dung-thumb.jpg",

@@ -115,7 +115,7 @@ const ProductDetail = () => {
             </div>
 
             <div className="text-5xl font-black text-cyan-600 mb-8">
-              {formattedPrice} <span className="text-2xl text-cyan-500">đ</span>
+              {formattedPrice} <span className="text-2xl text-cyan-500">đ (giá chưa bao gồm vat)</span>
             </div>
 
             <p className="text-gray-600 text-lg leading-relaxed mb-8">

@@ -17,21 +17,23 @@ const computeDiscount = (cart, promotions, vipInfo) => {
         // Mua X tặng Y → tính chiết khấu = số SP được tặng × đơn giá
         const soLuongMua = parseInt(km.soLuongMua) || 1;
         const soLuongTang = parseInt(km.soLuongTang) || 1;
+        const groupSize = soLuongMua + soLuongTang;
         for (const ct of km.chiTiet) {
           const cartItem = cart.find(i => i.product_code === ct.MaSP);
-          const muaToiThieu = parseInt(ct.MuaToiThieu) || soLuongMua;
-          if (cartItem && cartItem.quantity >= muaToiThieu) {
-            // Số lần đủ điều kiện (cứ mỗi soLuongMua SP mua thì được tặng soLuongTang SP)
-            const soLanDuDK = Math.floor(cartItem.quantity / soLuongMua);
+          if (cartItem && cartItem.quantity >= groupSize) {
+            // Số lần đủ điều kiện (cứ mỗi groupSize SP thì có soLuongTang SP được tặng)
+            const soLanDuDK = Math.floor(cartItem.quantity / groupSize);
             const soSPTang = soLanDuDK * soLuongTang;
             const discountAmt = soSPTang * cartItem.price;
-            discountLines.push({
-              label: `🎁 ${km.TenCT}: Mua ${soLuongMua} Tặng ${soLuongTang} — ${ct.TenSP || ct.MaSP} (x${cartItem.quantity} → tặng ${soSPTang} SP)`,
-              amount: discountAmt,
-              maKM: km.MaKM,
-              maSP: ct.MaSP,
-              isMuaTang: true,
-            });
+            if (discountAmt > 0) {
+              discountLines.push({
+                label: `🎁 ${km.TenCT}: Mua ${soLuongMua} Tặng ${soLuongTang} — ${ct.TenSP || ct.MaSP} (x${cartItem.quantity} → tặng ${soSPTang} SP)`,
+                amount: discountAmt,
+                maKM: km.MaKM,
+                maSP: ct.MaSP,
+                isMuaTang: true,
+              });
+            }
           }
         }
       } else {
@@ -138,6 +140,65 @@ const Cart = () => {
       } catch { setVipInfo(null); }
       setLoadingPhone(false);
     }
+  };
+
+  // Tự động nhảy số lượng nếu thêm từ trang khác (vd add 2 từ trang chi tiết)
+  useEffect(() => {
+    if (!promotions || promotions.length === 0) return;
+    cart.forEach(item => {
+      promotions.forEach(km => {
+        if (km.kieuKM === 'mua_tang' && km.chiTiet) {
+          const soLuongMua = parseInt(km.soLuongMua) || 1;
+          const soLuongTang = parseInt(km.soLuongTang) || 1;
+          const groupSize = soLuongMua + soLuongTang;
+          if (km.chiTiet.some(ct => ct.MaSP === item.product_code)) {
+            if (item.quantity % groupSize === soLuongMua) {
+              updateQuantity(item.product_code, item.quantity + soLuongTang);
+            }
+          }
+        }
+      });
+    });
+  }, [cart, promotions, updateQuantity]);
+
+  const handleIncrease = (item) => {
+    let nextQty = item.quantity + 1;
+    if (promotions) {
+      for (const km of promotions) {
+        if (km.kieuKM === 'mua_tang' && km.chiTiet) {
+          const soLuongMua = parseInt(km.soLuongMua) || 1;
+          const soLuongTang = parseInt(km.soLuongTang) || 1;
+          const groupSize = soLuongMua + soLuongTang;
+          if (km.chiTiet.some(ct => ct.MaSP === item.product_code)) {
+            if (nextQty % groupSize === soLuongMua) {
+              nextQty += soLuongTang;
+            }
+            break;
+          }
+        }
+      }
+    }
+    updateQuantity(item.product_code, nextQty);
+  };
+
+  const handleDecrease = (item) => {
+    let nextQty = item.quantity - 1;
+    if (promotions) {
+      for (const km of promotions) {
+        if (km.kieuKM === 'mua_tang' && km.chiTiet) {
+          const soLuongMua = parseInt(km.soLuongMua) || 1;
+          const soLuongTang = parseInt(km.soLuongTang) || 1;
+          const groupSize = soLuongMua + soLuongTang;
+          if (km.chiTiet.some(ct => ct.MaSP === item.product_code)) {
+            if (item.quantity % groupSize === 0) {
+              nextQty -= soLuongTang;
+            }
+            break;
+          }
+        }
+      }
+    }
+    updateQuantity(item.product_code, nextQty);
   };
 
   const handleCheckout = () => {
@@ -257,17 +318,17 @@ const Cart = () => {
                       {cart.map((item) => (
                         <tr key={item.product_code} className="border-b last:border-0 hover:bg-gray-50 transition">
                           <td className="py-4">
-                            <div className="flex items-center space-x-4">
-                              <img src={item.image || 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=100'} alt={item.name} className="w-20 h-20 object-cover rounded-lg bg-white border" />
-                              <span className="font-semibold text-gray-800 line-clamp-2 md:w-48">{item.name}</span>
-                            </div>
+                            <Link to={`/product/${item.product_code}`} className="flex items-center space-x-4 group">
+                              <img src={item.image || 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=100'} alt={item.name} className="w-20 h-20 object-cover rounded-lg bg-white border group-hover:shadow-md transition" />
+                              <span className="font-semibold text-gray-800 line-clamp-2 md:w-48 group-hover:text-cyan-600 transition">{item.name}</span>
+                            </Link>
                           </td>
                           <td className="py-4 text-center font-medium text-gray-600">{parseFloat(item.price).toLocaleString('vi-VN')}đ</td>
                           <td className="py-4">
                             <div className="flex items-center justify-center space-x-2">
-                              <button onClick={() => updateQuantity(item.product_code, item.quantity - 1)} className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition"><Minus className="w-4 h-4 text-gray-700" /></button>
+                              <button onClick={() => handleDecrease(item)} className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition"><Minus className="w-4 h-4 text-gray-700" /></button>
                               <span className="font-bold w-8 text-center text-lg">{item.quantity}</span>
-                              <button onClick={() => updateQuantity(item.product_code, item.quantity + 1)} className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition"><Plus className="w-4 h-4 text-gray-700" /></button>
+                              <button onClick={() => handleIncrease(item)} className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition"><Plus className="w-4 h-4 text-gray-700" /></button>
                             </div>
                           </td>
                           <td className="py-4 text-right font-bold text-cyan-600">{(item.price * item.quantity).toLocaleString('vi-VN')}đ</td>

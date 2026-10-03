@@ -183,7 +183,7 @@ export const customerPlaceOrder = async (req, res) => {
     await conn.query(
       `INSERT INTO DON_BAN_HANG (MaDon, NgayDat, MaKH, HinhThucTT, TrangThai,
         TongTienHang, TongThueVAT, TongChietKhau, TongThanhToan, MaKM_ApDung, MaSP_ApDung)
-       VALUES (?, NOW(), ?, ?, 'chờ_xác_nhận', 0, 0, 0, 0, ?, ?)`,
+       VALUES (?, NOW(), ?, ?, 'đã_xác_nhận', 0, 0, 0, 0, ?, ?)`,
       [MaDon, MaKH, HinhThucTT || "Tiền mặt", MaKM_ApDung, MaSP_ApDung]
     );
 
@@ -245,6 +245,48 @@ export const customerPlaceOrder = async (req, res) => {
   } catch (err) {
     await conn.rollback();
     res.status(400).json({ message: "Lỗi đặt hàng: " + err.message });
+  } finally {
+    conn.release();
+  }
+};
+
+/**
+ * PUT /api/orders/:id/cancel — Khách hàng tự hủy đơn
+ */
+export const cancelCustomerOrder = async (req, res) => {
+  const { id } = req.params;
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    const [orders] = await conn.query("SELECT TrangThai, MaKH, TongThanhToan FROM DON_BAN_HANG WHERE MaDon = ?", [id]);
+    if (orders.length === 0) {
+      await conn.rollback();
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
+    }
+    
+    if (orders[0].TrangThai !== 'chờ_xác_nhận' && orders[0].TrangThai !== 'đã_xác_nhận') {
+      await conn.rollback();
+      return res.status(400).json({ message: "Không thể hủy. Đơn hàng đang được giao hoặc đã hoàn thành." });
+    }
+
+    // Hoàn lại tồn kho
+    const [items] = await conn.query("SELECT MaSP, SoLuong FROM CT_DON_BAN WHERE MaDon = ?", [id]);
+    for (const item of items) {
+      await conn.query("UPDATE SAN_PHAM SET TonKho = TonKho + ? WHERE MaSP = ?", [item.SoLuong, item.MaSP]);
+    }
+    
+    // Trừ TongTieuDung của khách hàng
+    await conn.query("UPDATE KHACH_HANG SET TongTieuDung = TongTieuDung - ? WHERE MaKH = ?", [orders[0].TongThanhToan, orders[0].MaKH]);
+
+    // Cập nhật trạng thái
+    await conn.query("UPDATE DON_BAN_HANG SET TrangThai = 'đã_hủy' WHERE MaDon = ?", [id]);
+
+    await conn.commit();
+    res.json({ message: "Hủy đơn hàng thành công" });
+  } catch (err) {
+    await conn.rollback();
+    res.status(500).json({ message: "Lỗi hủy đơn hàng", error: err.message });
   } finally {
     conn.release();
   }

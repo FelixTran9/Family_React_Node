@@ -8,6 +8,21 @@ const Orders = () => {
   const { currentUser } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [cancelingId, setCancelingId] = useState(null);
+
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này không?")) return;
+    setCancelingId(orderId);
+    try {
+      await API.put(`/orders/${orderId}/cancel`);
+      setOrders(orders.map(o => o.id === orderId ? { ...o, status: 'đã_hủy' } : o));
+      alert("Hủy đơn hàng thành công");
+    } catch (err) {
+      alert(err.response?.data?.message || "Lỗi khi hủy đơn hàng");
+    } finally {
+      setCancelingId(null);
+    }
+  };
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -30,6 +45,10 @@ const Orders = () => {
 
   const getStatusDisplay = (status) => {
     switch(status) {
+      case 'chờ_xác_nhận':
+        return <span className="flex items-center justify-center md:justify-start text-yellow-600 bg-yellow-50 px-4 py-1.5 rounded-full text-sm font-bold shadow-sm"><Package className="w-4 h-4 mr-2" /> Chờ xác nhận</span>;
+      case 'đã_xác_nhận':
+        return <span className="flex items-center justify-center md:justify-start text-orange-600 bg-orange-50 px-4 py-1.5 rounded-full text-sm font-bold shadow-sm"><Package className="w-4 h-4 mr-2" /> Đang xử lý</span>;
       case 'đang_giao': 
         return <span className="flex items-center justify-center md:justify-start text-blue-600 bg-blue-50 px-4 py-1.5 rounded-full text-sm font-bold shadow-sm"><Truck className="w-4 h-4 mr-2" /> Đang giao hàng</span>;
       case 'đã_giao':
@@ -38,7 +57,6 @@ const Orders = () => {
       case 'giao_thất_bại':
         return <span className="flex items-center justify-center md:justify-start text-red-600 bg-red-50 px-4 py-1.5 rounded-full text-sm font-bold shadow-sm"><XCircle className="w-4 h-4 mr-2" /> {status === 'đã_hủy' ? 'Đã hủy' : 'Giao thất bại'}</span>;
       default:
-        // chờ_xác_nhận, đã_xác_nhận
         return <span className="flex items-center justify-center md:justify-start text-orange-600 bg-orange-50 px-4 py-1.5 rounded-full text-sm font-bold shadow-sm"><Package className="w-4 h-4 mr-2" /> Đang xử lý</span>;
     }
   };
@@ -74,8 +92,17 @@ const Orders = () => {
                   <p className="inline-block bg-gray-100 text-gray-700 font-semibold px-3 py-1 rounded text-sm">{order.items} sản phẩm</p>
                 </div>
                 <div className="text-left md:text-right w-full md:w-auto flex flex-row md:flex-col justify-between md:justify-end items-center md:items-end">
-                  <div className="mb-0 md:mb-3">
+                  <div className="mb-0 md:mb-3 flex flex-col md:flex-row items-end md:items-center gap-2">
                     {getStatusDisplay(order.status)}
+                    {(order.status === 'chờ_xác_nhận' || order.status === 'đã_xác_nhận') && (
+                      <button 
+                        onClick={() => handleCancelOrder(order.id)}
+                        disabled={cancelingId === order.id}
+                        className="text-red-500 bg-red-50 hover:bg-red-100 hover:text-red-600 px-3 py-1.5 rounded-full text-sm font-bold transition flex items-center shadow-sm disabled:opacity-50 mt-2 md:mt-0"
+                      >
+                        <XCircle className="w-4 h-4 mr-1" /> {cancelingId === order.id ? 'Đang hủy...' : 'Hủy đơn'}
+                      </button>
+                    )}
                   </div>
                   <p className="text-2xl font-bold text-cyan-600 drop-shadow-sm">
                     {Number(order.total || 0).toLocaleString('vi-VN')}đ
